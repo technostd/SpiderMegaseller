@@ -1,37 +1,18 @@
 // src/components/PrivateRoute.tsx
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { checkAuth } from '../api/checkAuth';
+import {Navigate, Outlet, useLocation} from 'react-router-dom';
+import {useAuth} from '../contexts/AuthProvider';
 
 export default function PrivateRoute() {
-  const [authStatus, setAuthStatus] = useState<'idle' | 'checking' | 'authenticated' | 'unauthenticated'>('checking');
-  const location = useLocation();
+    const {user, isLoading} = useAuth();
+    const location = useLocation();
 
-  useEffect(() => {
-    let cancelled = false;
+    if (isLoading) {
+        return <div>Загрузка...</div>;
+    }
 
-    const verify = async () => {
-      const isAuth = await checkAuth();
-      if (!cancelled) {
-        setAuthStatus(isAuth ? 'authenticated' : 'unauthenticated');
-      }
-    };
+    if (!user) {
+        return <Navigate to="/login" state={{from: location.pathname}} replace/>;
+    }
 
-    verify();
-    return () => { cancelled = true; };
-  }, []);
-
-  if (authStatus === 'checking') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
-        <div className="text-emerald-700">Проверка доступа...</div>
-      </div>
-    );
-  }
-
-  if (authStatus === 'unauthenticated') {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  return <Outlet />;
+    return <Outlet/>;
 }

@@ -1,7 +1,11 @@
 // src/pages/Instructions.tsx
 import Layout from "../components/Layout.tsx";
+import {usePageSubtitle} from "../hooks/usePageTitle.ts";
 
 export default function Instructions() {
+
+    usePageSubtitle('Инструкция')
+
     return (
         <Layout>
 

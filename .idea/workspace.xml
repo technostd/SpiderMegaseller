@@ -5,42 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8aa4c674-25c6-4ecf-a308-957844ead44c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/SpiderMegaseller.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/accounts/middleware.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/accounts/signals.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/accounts/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/serializers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/core/integrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/core/integrations/yandex_gpt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/checkAuth.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/client.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/DashboardLayout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/Footer.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/Header.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/Layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/PrivateRoute.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/constants.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/hooks/usePageTitle.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/AiReviewsPublic.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/AiReviewsTest.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Login.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Modules.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/lk/ModuleSettings.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/TestContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/contexts/AuthProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/backend/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/PrivateRoute.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/PrivateRoute.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/constants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/usePageTitle.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/usePageTitle.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/ModuleSettings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/ModuleSettings.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,11 +42,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;technostd&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/technostd/SpiderMegaseller.git&quot;,
+    &quot;accountId&quot;: &quot;10199d21-3ac5-496f-959b-e5d2108f34fc&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="36KoUIsKoiz6AwN11U9vLRL7jcX" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -70,7 +65,10 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -88,8 +86,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-410509235cf1-JavaScript-PY-242.20224.347" />
-        <option value="bundled-python-sdk-c2d6afa66fbe-39cff9de6eef-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.20224.347" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.130" />
+        <option value="bundled-python-sdk-1bde30d8e611-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.130" />
       </set>
     </attachedChunks>
   </component>
@@ -103,6 +101,8 @@
       <updated>1764764638503</updated>
       <workItem from="1764764641023" duration="1134000" />
       <workItem from="1764770223467" duration="34351000" />
+      <workItem from="1764815294432" duration="321000" />
+      <workItem from="1764816173314" duration="8734000" />
     </task>
     <servers />
   </component>
@@ -110,6 +110,21 @@
     <option name="version" value="3" />
   </component>
   <component name="UnknownFeatures">
+    <option featureType="dependencySupport" implementationName="javascript:npm:react" />
+    <option featureType="dependencySupport" implementationName="javascript:npm:tailwindcss" />
+    <option featureType="dependencySupport" implementationName="javascript:npm:vite" />
     <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />
+    <option featureType="dependencySupport" implementationName="javascript:npm:postcss" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

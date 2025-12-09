@@ -1,11 +1,18 @@
 // src/pages/lk/ModuleSettings.tsx
 import Layout from '../../components/Layout';
 import { useParams } from 'react-router-dom';
+import {usePageSubtitle} from "../../hooks/usePageTitle.ts";
+import {MODULES} from "../../constants.ts";
 
 export default function ModuleSettings() {
   const { id } = useParams();
+  usePageSubtitle(MODULES.ai_reviews + ' — Настройки')
+
 
   return (
+
+
+
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-emerald-900 mb-6">

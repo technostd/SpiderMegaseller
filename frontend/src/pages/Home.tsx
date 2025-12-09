@@ -1,13 +1,10 @@
-// src/pages/Home.tsx
-import { PAGE_TITLES } from '../constants';
 import Layout from '../components/Layout';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import {useDefaultTitle} from "../hooks/usePageTitle.ts";
 
 export default function Home() {
-  useEffect(() => {
-    document.title = PAGE_TITLES.HOME;
-  }, []);
+
+    useDefaultTitle();
 
   return (
     <Layout>

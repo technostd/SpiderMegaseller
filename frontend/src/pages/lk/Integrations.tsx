@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import api from '../../api/client';
 import DashboardLayout from "../../components/DashboardLayout.tsx";
+import {usePageSubtitle} from "../../hooks/usePageTitle.ts";
 
 export default function Integrations() {
+
+    usePageSubtitle('Интеграции');
+
   const [credentials, setCredentials] = useState({
     ozon: { client_id: '', api_key: '' },
     wb: { api_key: '' },

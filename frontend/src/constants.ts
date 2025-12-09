@@ -8,4 +8,8 @@ export const PAGE_TITLES = {
   MODULES: 'Паук — Модули автоматизации',
 } as const;
 
+export const MODULES = {
+    'ai_reviews': 'ИИ-анализ отызовов OZON',
+} as const;
+
 export const META_DESCRIPTION = 'Автоматизируйте ответы на отзывы, анализируйте продажи и управляйте магазинами в одном месте';

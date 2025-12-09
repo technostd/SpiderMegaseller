@@ -1,3 +1,4 @@
+// src/api/client.ts
 import axios from 'axios';
 
 const api = axios.create({
@@ -20,35 +21,49 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
   refreshSubscribers.push(callback);
 };
 
-api.interceptors.request.use(
-  (config) => {
-    // Можно добавить логирование запросов для отладки
-    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Список публичных эндпоинтов, которые НЕ должны вызывать редирект
+const PUBLIC_ENDPOINTS = [
+  '/auth/login/',
+  '/auth/register/',
+  '/auth/password/reset/',
+];
+
+// Список публичных путей на фронтенде
+const PUBLIC_PATHS = [
+  '/',
+  '/login',
+  '/register',
+  '/instructions',
+  '/modules',
+  '/module/ai-reviews',
+  '/module/ai-reviews/test',
+];
 
 api.interceptors.response.use(
-  (response) => {
-    console.log(`[API Response] ${response.status} ${response.config.url}`);
-    return response;
-  },
+  (response) => response,
   async (error) => {
-    console.log(`[API Error] ${error.response?.status} ${error.config?.url}`, error.response?.data);
-
     const originalRequest = error.config;
 
-    // Если 401 и это не запрос на refresh и мы еще не пытались повторить
-    if (error.response?.status === 401 &&
-        !originalRequest.url?.includes('token/refresh') &&
-        !originalRequest._retry) {
+    // Если ошибка не 401 или это публичный эндпоинт - просто прокидываем ошибку
+    if (error.response?.status !== 401 ||
+        PUBLIC_ENDPOINTS.some(endpoint => originalRequest.url?.includes(endpoint))) {
+      return Promise.reject(error);
+    }
 
+    // Если пользователь на публичной странице - не делаем редирект
+    if (PUBLIC_PATHS.some(path => window.location.pathname === path ||
+                                  window.location.pathname.startsWith(path))) {
+      return Promise.reject(error);
+    }
+
+    // Если 401 и это не запрос на refresh и мы еще не пытались повторить
+    if (!originalRequest.url?.includes('token/refresh') && !originalRequest._retry) {
       if (isRefreshing) {
-        // Ждём, пока refresh завершится
         return new Promise((resolve) => {
           addRefreshSubscriber((token: string) => {
-            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            if (token) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            }
             resolve(api(originalRequest));
           });
         });
@@ -58,52 +73,36 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Делаем POST запрос на refresh с корректными данными
-        console.log('[Token Refresh] Attempting token refresh...');
-
         const response = await axios.post(
           'http://localhost:8000/api/auth/token/refresh/',
-          {}, // Empty body if using cookies
+          {},
           {
             withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-            }
+            headers: { 'Content-Type': 'application/json' }
           }
         );
 
-        console.log('[Token Refresh] Success');
-
-        // Если refresh возвращает новый токен в JSON (опционально)
+        // Если refresh возвращает новый токен
         if (response.data?.access) {
-          // Сохраняем новый токен для подписчиков
           onRefreshed(response.data.access);
-
-          // Обновляем заголовок для текущего запроса
           originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
         }
 
-        // Повторяем оригинальный запрос
+        isRefreshing = false;
         return api(originalRequest);
       } catch (refreshError) {
         console.log('[Token Refresh] Failed', refreshError);
-
-        // Refresh провалился — редирект на логин
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-        return Promise.reject(refreshError);
-      } finally {
         isRefreshing = false;
+
+        // Вместо хардкодного редиректа - просто прокидываем ошибку
+        // AuthProvider сам решит, нужно ли редиректить
+        return Promise.reject(refreshError);
       }
     }
 
-    // Если это ошибка refresh, тоже редиректим на логин
-    if (error.response?.status === 401 && originalRequest.url?.includes('token/refresh')) {
-      console.log('[Token Refresh] Refresh token expired, redirecting to login');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+    // Если это ошибка refresh
+    if (originalRequest.url?.includes('token/refresh')) {
+      console.log('[Token Refresh] Refresh token expired');
     }
 
     return Promise.reject(error);

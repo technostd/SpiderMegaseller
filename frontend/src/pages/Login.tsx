@@ -1,137 +1,74 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../api/client';
-import Layout from '../components/Layout';
+// src/pages/Login.tsx
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthProvider';
+import { useLocation } from 'react-router-dom';
 
 export default function Login() {
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const { login } = useAuth();
+  const location = useLocation();
 
-    const checkAndRedirect = async () => {
-      try {
-        await api.get('/auth/user/');
-        if (!cancelled) {
-          navigate('/lk', { replace: true });
-        }
-      } catch {
-        // Не авторизован — оставляем на странице логина
-      }
-    };
-
-    checkAndRedirect();
-    return () => { cancelled = true; };
-  }, [navigate]);
+  const from = (location.state as any)?.from || '/lk';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const email = (form.email as HTMLInputElement).value;
-    const password = (form.password as HTMLInputElement).value;
+    setError('');
+    setIsLoading(true);
 
     try {
-      await api.post('/auth/login/', { email, password });
-      navigate('/lk', { replace: true });
+      await login(email, password);
     } catch (err: any) {
-      alert('Ошибка входа: ' + (err.response?.data?.detail || 'Неверный email или пароль'));
+      setError(err.response?.data?.message || 'Ошибка входа');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto flex min-h-[calc(100vh-64px)] items-center justify-center py-20">
-          <div className="w-full max-w-md">
-            <div className="bg-card rounded-xl border border-border shadow-lg p-8">
-              <div className="text-center mb-8">
-                <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-bug h-8 w-8 text-primary"
-                  >
-                    <path d="m8 2 1.88 1.88"></path>
-                    <path d="M14.12 3.88 16 2"></path>
-                    <path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"></path>
-                    <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"></path>
-                    <path d="M12 20v-9"></path>
-                    <path d="M6.53 9C4.6 8.8 3 7.1 3 5"></path>
-                    <path d="M6 13H2"></path>
-                    <path d="M3 21c0-2.1 1.7-3.9 3.8-4"></path>
-                    <path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"></path>
-                    <path d="M22 13h-4"></path>
-                    <path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"></path>
-                  </svg>
-                </div>
-                <p className="text-muted-foreground mt-2">Войдите в ваш аккаунт</p>
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+        <h2 className="text-center text-3xl font-bold">Вход в систему</h2>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="w-full px-4 py-3 bg-background border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    Пароль
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    className="w-full px-4 py-3 bg-background border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-emerald-600 text-white hover:bg-emerald-700 h-11 rounded-md px-4 py-3 text-base"
-                >
-                  Войти
-                </button>
-              </form>
-
-              <div className="mt-6 pt-6 border-t border-border text-center">
-                <p className="text-sm text-muted-foreground">
-                  Нет аккаунта?{' '}
-                  <a
-                    href="https://t.me/technostd"
-                    className="font-medium text-primary hover:underline transition-colors"
-                  >
-                    Свяжитесь с администратором
-                  </a>
-                </p>
-              </div>
-            </div>
+          <div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Email"
+            />
           </div>
-        </div>
+
+          <div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Пароль"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+          >
+            {isLoading ? 'Вход...' : 'Войти'}
+          </button>
+        </form>
       </div>
-    </Layout>
+    </div>
   );
 }

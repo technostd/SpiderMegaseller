@@ -2,8 +2,12 @@
 import { useState, useEffect } from 'react';
 import ReviewAnalyzer from '../../components/ReviewAnalyzer';
 import Layout from "../../components/Layout.tsx";
+import {usePageSubtitle} from "../../hooks/usePageTitle.ts";
 
 export default function AiReviewsModule() {
+
+    usePageSubtitle('Модуль ИИ-анализа отзывов OZON')
+
     const [activeExample, setActiveExample] = useState<string | null>(null);
     const [currentReview, setCurrentReview] = useState({
         review_text: '',
@@ -211,9 +215,9 @@ export default function AiReviewsModule() {
                         <h3 className="font-medium text-foreground text-sm">{review.title}</h3>
                         <span
                           className={`px-2 py-1 rounded text-xs ${
-                            parseInt(review.original_rating) <= 2
+                            (parseInt(review.original_rating) <= 2)
                               ? 'bg-destructive/10 text-destructive'
-                              : parseInt(review.original_rating) >= 4
+                              : (parseInt(review.original_rating) >= 4)
                               ? 'bg-success/10 text-success'
                               : 'bg-muted text-muted-foreground'
                           }`}

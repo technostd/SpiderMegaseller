@@ -24,7 +24,7 @@ body {
 
 /* Стили для градиентных текстов */
 .gradient-text {
-  @apply bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 bg-clip-text text-transparent;
 }
 
 /* Плавные переходы */
@@ -34,7 +34,7 @@ body {
 
 /* Кастомные стили для скроллбара */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -42,9 +42,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-indigo-400 to-purple-400 rounded-full;
+  @apply bg-gradient-to-b from-emerald-400 to-emerald-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply from-indigo-500 to-purple-500;
+  @apply from-emerald-700 to-emerald-600;
 }

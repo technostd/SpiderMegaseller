@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import api from '../api/client';
 
 interface ReviewAnalyzerProps {
@@ -11,13 +11,13 @@ interface ReviewAnalyzerProps {
 }
 
 export default function ReviewAnalyzer({
-    initialReviewText = '',
-    initialProductModel = '',
-    initialRating = '',
-    autoSubmit = false,
-    compact = false,
-    onAnalyze
-}: ReviewAnalyzerProps) {
+                                           initialReviewText = '',
+                                           initialProductModel = '',
+                                           initialRating = '',
+                                           autoSubmit = false,
+                                           compact = false,
+                                           onAnalyze
+                                       }: ReviewAnalyzerProps) {
     const [form, setForm] = useState({
         review_text: initialReviewText,
         product_model: initialProductModel,
@@ -27,29 +27,28 @@ export default function ReviewAnalyzer({
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Обновляем форму при изменении пропсов
     useEffect(() => {
         setForm({
             review_text: initialReviewText,
             product_model: initialProductModel,
             original_rating: initialRating,
         });
-        // Сбрасываем результат при смене отзыва
+
         setResult(null);
         setError(null);
     }, [initialReviewText, initialProductModel, initialRating]);
 
     const sentimentConfig = {
-        very_negative: { label: 'Очень негатив', bg: 'bg-red-100', text: 'text-red-800' },
-        negative: { label: 'Негатив', bg: 'bg-orange-100', text: 'text-orange-800' },
-        neutral: { label: 'Нейтрально', bg: 'bg-gray-100', text: 'text-gray-800' },
-        positive: { label: 'Позитив', bg: 'bg-emerald-100', text: 'text-emerald-800' },
-        very_positive: { label: 'Очень позитив', bg: 'bg-green-100', text: 'text-green-800' },
-        mixed: { label: 'Смешанная', bg: 'bg-purple-100', text: 'text-purple-800' },
-        critical: { label: 'Критическая', bg: 'bg-rose-100', text: 'text-rose-800' },
-        suggestion: { label: 'Предложение', bg: 'bg-blue-100', text: 'text-blue-800' },
-        question: { label: 'Вопрос', bg: 'bg-cyan-100', text: 'text-cyan-800' },
-        default: { label: 'Не определена', bg: 'bg-gray-100', text: 'text-gray-500' }
+        very_negative: {label: 'Очень негатив', bg: 'bg-red-100', text: 'text-red-800'},
+        negative: {label: 'Негатив', bg: 'bg-orange-100', text: 'text-orange-800'},
+        neutral: {label: 'Нейтрально', bg: 'bg-gray-100', text: 'text-gray-800'},
+        positive: {label: 'Позитив', bg: 'bg-emerald-100', text: 'text-emerald-800'},
+        very_positive: {label: 'Очень позитив', bg: 'bg-green-100', text: 'text-green-800'},
+        mixed: {label: 'Смешанная', bg: 'bg-purple-100', text: 'text-purple-800'},
+        critical: {label: 'Критическая', bg: 'bg-rose-100', text: 'text-rose-800'},
+        suggestion: {label: 'Предложение', bg: 'bg-blue-100', text: 'text-blue-800'},
+        question: {label: 'Вопрос', bg: 'bg-cyan-100', text: 'text-cyan-800'},
+        default: {label: 'Не определена', bg: 'bg-gray-100', text: 'text-gray-500'}
     };
 
     const handleSubmit = async (e?: React.FormEvent) => {
@@ -124,7 +123,7 @@ export default function ReviewAnalyzer({
                     'critical': 'Критический'
                 };
                 const priority = priorityMap[analysisJson.analysis.summary.priority_level] ||
-                               analysisJson.analysis.summary.priority_level;
+                    analysisJson.analysis.summary.priority_level;
                 suggestions.push(`Приоритет: ${priority}`);
             }
 
@@ -182,7 +181,8 @@ export default function ReviewAnalyzer({
 
                     {loading && (
                         <div className="text-center py-3">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600 mx-auto"></div>
+                            <div
+                                className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600 mx-auto"></div>
                         </div>
                     )}
 
@@ -233,11 +233,11 @@ export default function ReviewAnalyzer({
                             {loading ? (
                                 <>
                                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            strokeWidth="4"></circle>
+                                                strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     Анализируем...
                                 </>
@@ -247,7 +247,8 @@ export default function ReviewAnalyzer({
 
                     {loading && (
                         <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+                            <div
+                                className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
                             <p className="text-emerald-700 mt-4">ИИ анализирует отзыв...</p>
                         </div>
                     )}
@@ -267,7 +268,8 @@ export default function ReviewAnalyzer({
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <div className="text-sm font-medium text-gray-500 mb-2">Тональность</div>
-                                        <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${config.bg} ${config.text}`}>
+                                        <div
+                                            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${config.bg} ${config.text}`}>
                                             {config.label}
                                         </div>
                                     </div>
