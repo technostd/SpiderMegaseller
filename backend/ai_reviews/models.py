@@ -1,6 +1,6 @@
-# ai_reviews/models.py
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.serializers.json import DjangoJSONEncoder
 import json
 
 User = get_user_model()
@@ -31,10 +31,11 @@ class ReviewAnalysis(models.Model):
         blank=True
     )
 
-    # Результат анализа от Yandex GPT (храним как JSON текст для SQLite)
-    analysis_data_json = models.TextField(
-        verbose_name='Данные анализа (JSON)',
-        default='{}',
+    # Результат анализа от Yandex GPT (храним как JSONField)
+    analysis_data = models.JSONField(
+        verbose_name='Данные анализа',
+        encoder=DjangoJSONEncoder,
+        default=dict,
         blank=True
     )
 
@@ -71,20 +72,6 @@ class ReviewAnalysis(models.Model):
     def __str__(self):
         return f"Анализ отзыва #{self.id} от {self.user}"
 
-    # Property для удобного доступа к данным анализа
-    @property
-    def analysis_data(self):
-        """Получаем JSON данные"""
-        try:
-            return json.loads(self.analysis_data_json)
-        except (json.JSONDecodeError, TypeError):
-            return {}
-
-    @analysis_data.setter
-    def analysis_data(self, value):
-        """Сохраняем JSON данные"""
-        self.analysis_data_json = json.dumps(value, ensure_ascii=False, default=str)
-
     @property
     def generated_response(self) -> str:
         """Сгенерированный ответ"""
@@ -93,7 +80,7 @@ class ReviewAnalysis(models.Model):
     @property
     def sentiment(self) -> str:
         """Тональность отзыва"""
-        return self.analysis_data.get('analysis', {}).get('overall_sentiment', {}).get('sentiment', 'unknown')
+        return self.analysis_data.get('analysis', {}).get('overall_sentiment', {}).get('sentiment', '')
 
     @property
     def issues_count(self) -> int:
@@ -104,3 +91,18 @@ class ReviewAnalysis(models.Model):
     def summary(self) -> dict:
         """Краткое резюме"""
         return self.analysis_data.get('analysis', {}).get('summary', {})
+
+    @property
+    def review_data(self) -> dict:
+        """Данные отзыва"""
+        return self.analysis_data.get('review_data', {})
+
+    @property
+    def generated_response_full(self) -> dict:
+        """Полные данные сгенерированного ответа"""
+        return self.analysis_data.get('generated_response', {})
+
+    @property
+    def analysis_results(self) -> dict:
+        """Результаты анализа"""
+        return self.analysis_data.get('analysis', {})

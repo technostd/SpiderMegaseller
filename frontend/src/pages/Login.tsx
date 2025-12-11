@@ -1,7 +1,7 @@
 // src/pages/Login.tsx
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthProvider';
-import { useLocation } from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +11,7 @@ export default function Login() {
 
   const { login } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const from = (location.state as any)?.from || '/lk';
 
@@ -25,6 +26,7 @@ export default function Login() {
       setError(err.response?.data?.message || 'Ошибка входа');
     } finally {
       setIsLoading(false);
+      navigate(from);
     }
   };
 

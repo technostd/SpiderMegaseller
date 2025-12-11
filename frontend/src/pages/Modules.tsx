@@ -204,7 +204,7 @@ export default function Modules() {
                   {/* Action Button */}
                   {module.status === 'active' ? (
                     <Link
-                      to="/dashboard/ai-reviews"
+                      to="/lk/ai-reviews"
                       className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-emerald-600 text-emerald-50 hover:bg-emerald-700 h-10 px-4 text-sm"
                     >
                       Подключить
