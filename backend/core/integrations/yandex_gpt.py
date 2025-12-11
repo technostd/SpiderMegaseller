@@ -1,10 +1,13 @@
-# core/integrations/yandex_gpt_openai.py
 import openai
 import json
 import os
-from typing import Dict, List, Optional
+import re
+from typing import Dict, Optional
 from django.conf import settings
 from django.utils import timezone
+
+from ..prompts.system_prompt import SYSTEM_PROMPT
+from ..prompts.user_prompt import create_user_prompt
 
 
 class YandexGPTError(Exception):
@@ -72,9 +75,12 @@ class YandexGPT:
             return self._mock_analysis(review_data)
 
         try:
-            # Формируем промпт для JSON ответа
-            system_prompt = self._create_system_prompt()
-            user_prompt = self._create_user_prompt(review_data)
+            # Формируем промпты
+            user_prompt = create_user_prompt(
+                review_text=review_data.get('review_text', ''),
+                product_model=review_data.get('product_model'),
+                rating=review_data.get('original_rating')
+            )
 
             print(f"[DEBUG] Отправка запроса в Yandex GPT...")
 
@@ -82,11 +88,11 @@ class YandexGPT:
             response = self.client.chat.completions.create(
                 model=f"gpt://{self.folder_id}/{self.model_name}",
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.2,
-                max_tokens=2000,
+                max_tokens=3000,
                 stream=False
             )
 
@@ -99,7 +105,6 @@ class YandexGPT:
                 analysis_data = json.loads(response_text)
             except json.JSONDecodeError:
                 # Пробуем найти JSON в тексте
-                import re
                 json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
                 if json_match:
                     analysis_data = json.loads(json_match.group())
@@ -107,7 +112,7 @@ class YandexGPT:
                     # Если не JSON, создаем структурированный ответ из текста
                     analysis_data = self._create_structured_from_text(response_text, review_data)
 
-            # Валидируем и дополняем
+            # Валидируем и дополняем базовые поля
             validated_data = self._validate_analysis_structure(analysis_data, review_data)
 
             return {
@@ -128,81 +133,52 @@ class YandexGPT:
             print(f"[ERROR] Ошибка анализа: {str(e)}")
             return self._mock_analysis(review_data)
 
-    def _create_system_prompt(self) -> str:
-        """Создаем системный промпт"""
-        return """Ты - AI ассистент для анализа отзывов клиентов. 
-        Твоя задача: проанализировать отзыв и вернуть результат в формате JSON.
-
-        Структура JSON должна быть:
-        {
-            "review_data": {
-                "product_model": "string",
-                "original_rating": number,
-                "review_text": "string"
-            },
-            "generated_response": {
-                "response_text": "string",
-                "response_tone": "formal/friendly/apologetic/neutral/grateful",
-                "response_purpose": "thank/apologize/clarify/solve_issue/request_feedback"
-            },
-            "analysis": {
-                "overall_sentiment": {
-                    "sentiment": "positive/negative/neutral/mixed",
-                    "sentiment_score": number (-1 to 1)
-                },
-                "identified_issues": [
-                    {
-                        "issue_category": "product_quality/logistics/customer_service/price",
-                        "issue_description": "string",
-                        "severity_level": "critical/high/medium/low"
-                    }
-                ]
-            }
-        }
-
-        ВАЖНО: Отвечай ТОЛЬКО в формате JSON, без дополнительного текста."""
-
-    def _create_user_prompt(self, review_data: Dict) -> str:
-        """Создаем пользовательский промпт"""
-        review_text = review_data.get('review_text', '').strip()
-        product_model = review_data.get('product_model', 'Не указано').strip()
-        rating = review_data.get('original_rating', 'Не указана')
-
-        return f"""Проанализируй этот отзыв и верни результат в JSON формате:
-
-ОТЗЫВ: {review_text}
-МОДЕЛЬ ТОВАРА: {product_model}
-ОЦЕНКА ПОЛЬЗОВАТЕЛЯ: {rating}/5
-
-Проанализируй тон отзыва, выяви конкретные проблемы, сгенерируй вежливый ответ для владельца бизнеса."""
-
     def _create_structured_from_text(self, text: str, review_data: Dict) -> Dict:
         """Создаем структурированный ответ из текста"""
         return {
             "review_data": {
-                "product_model": review_data.get('product_model', 'Не указано'),
+                "product_model": review_data.get('product_model'),
                 "original_rating": review_data.get('original_rating', 3),
-                "review_text": review_data.get('review_text', '')
+                "review_text": review_data.get('review_text', ''),
+                "review_date": timezone.now().isoformat(),
+                "extracted_rating_change": None
             },
             "generated_response": {
                 "response_text": text,
-                "response_tone": "neutral",
-                "response_purpose": "thank"
+                "response_tone": "Нейтральный",
+                "response_purpose": "Поблагодарить",
+                "key_points_addressed": []
             },
             "analysis": {
                 "overall_sentiment": {
-                    "sentiment": "neutral",
-                    "sentiment_score": 0.0
+                    "sentiment": "Нейтральный",
+                    "sentiment_score": 0.0,
+                    "main_emotion": "Нейтрален"
                 },
-                "identified_issues": []
+                "mentioned_aspects": {
+                    "product_related": [],
+                    "service_related": [],
+                    "logistics_related": []
+                },
+                "identified_issues": [],
+                "key_phrases": {
+                    "positive_phrases": [],
+                    "negative_phrases": [],
+                    "suggestions": []
+                },
+                "summary": {
+                    "main_problem": "",
+                    "priority_level": "Средний",
+                    "recommended_action": "Мониторинг"
+                }
             }
         }
 
     def _validate_analysis_structure(self, analysis_data: Dict, original_data: Dict) -> Dict:
-        """Валидация структуры анализа"""
+        """Базовая валидация структуры анализа"""
         validated = {
             "review_data": {
-                "product_model": original_data.get('product_model', 'Не указано'),
+                "product_model": original_data.get('product_model'),
                 "original_rating": original_data.get('original_rating', 3),
                 "review_date": timezone.now().isoformat(),
                 "review_text": original_data.get('review_text', ''),
@@ -210,21 +186,31 @@ class YandexGPT:
             },
             "generated_response": {
                 "response_text": "",
-                "response_tone": "neutral",
-                "response_purpose": "thank",
+                "response_tone": "Нейтральный",
+                "response_purpose": "Поблагодарить",
                 "key_points_addressed": []
             },
             "analysis": {
                 "overall_sentiment": {
-                    "sentiment": "neutral",
+                    "sentiment": "Нейтральный",
                     "sentiment_score": 0.0,
-                    "main_emotion": "neutral"
+                    "main_emotion": "Нейтрален"
+                },
+                "mentioned_aspects": {
+                    "product_related": [],
+                    "service_related": [],
+                    "logistics_related": []
                 },
                 "identified_issues": [],
+                "key_phrases": {
+                    "positive_phrases": [],
+                    "negative_phrases": [],
+                    "suggestions": []
+                },
                 "summary": {
                     "main_problem": "",
-                    "recommended_action": "monitor",
-                    "priority_level": "medium"
+                    "priority_level": "Средний",
+                    "recommended_action": "Мониторинг"
                 }
             }
         }
@@ -242,9 +228,11 @@ class YandexGPT:
 
         # Гарантируем наличие текста ответа
         if not validated["generated_response"]["response_text"]:
+            product_name = validated["review_data"]["product_model"] or "товаре"
             validated["generated_response"]["response_text"] = (
-                f"Благодарим за отзыв о товаре '{validated['review_data']['product_model']}'. "
-                f"Мы ценим ваше мнение."
+                f"Уважаемый клиент, благодарим вас за отзыв о {product_name}! "
+                f"Мы ценим ваше мнение. "
+                f"Для решения индивидуальных вопросов, пожалуйста, обратитесь в службу поддержки через личный кабинет на Ozon."
             )
 
         return validated
@@ -252,9 +240,41 @@ class YandexGPT:
     def _mock_analysis(self, review_data: Dict) -> Dict:
         """Mock анализ для разработки"""
         rating = review_data.get('original_rating', 3)
-        product = review_data.get('product_model', 'Товар')
+        product = review_data.get('product_model')
+        review_text = review_data.get('review_text', '')
 
-        sentiment = "positive" if rating >= 4 else "negative" if rating <= 2 else "neutral"
+        # Определяем тон на основе оценки
+        if rating >= 4:
+            sentiment = "Позитивный"
+            emotion = "Доволен"
+            tone = "Благодарный"
+            purpose = "Поблагодарить"
+            score = 0.8
+        elif rating <= 2:
+            sentiment = "Негативный"
+            emotion = "Разочарован"
+            tone = "Извиняющийся"
+            purpose = "Извиниться"
+            score = -0.6
+        else:
+            sentiment = "Нейтральный"
+            emotion = "Нейтрален"
+            tone = "Нейтральный"
+            purpose = "Поблагодарить"
+            score = 0.1
+
+        # Определяем проблемы
+        issues = []
+        if rating < 4:
+            issues = [
+                {
+                    "issue_category": "Качество товара",
+                    "issue_description": "Требуется улучшение качества продукции",
+                    "mentioned_in_text": review_text[:50] + "..." if review_text else "Не указано",
+                    "severity_level": "Средняя",
+                    "potential_solutions": ["Улучшить контроль качества", "Обновить материалы"]
+                }
+            ]
 
         return {
             "success": True,
@@ -263,41 +283,44 @@ class YandexGPT:
                     "product_model": product,
                     "original_rating": rating,
                     "review_date": timezone.now().isoformat(),
-                    "review_text": review_data.get('review_text', ''),
+                    "review_text": review_text,
                     "extracted_rating_change": None
                 },
                 "generated_response": {
-                    "response_text": f"Уважаемый клиент, благодарим за ваш отзыв о товаре '{product}'. "
-                                     f"Мы ценим ваше мнение и обязательно учтем ваши замечания.",
-                    "response_tone": "grateful" if rating >= 4 else "apologetic",
-                    "response_purpose": "thank" if rating >= 4 else "apologize",
-                    "key_points_addressed": ["качество", "сервис"]
+                    "response_text": f"Уважаемый клиент, благодарим вас за отзыв{' о ' + product if product else ''}! "
+                                     f"Мы ценим ваше мнение. "
+                                     f"Для решения индивидуальных вопросов, пожалуйста, обратитесь в службу поддержки через личный кабинет на Ozon.",
+                    "response_tone": tone,
+                    "response_purpose": purpose,
+                    "key_points_addressed": ["качество", "сервис"] if issues else []
                 },
                 "analysis": {
                     "overall_sentiment": {
                         "sentiment": sentiment,
-                        "sentiment_score": 0.8 if rating >= 4 else -0.3 if rating <= 2 else 0.0,
-                        "main_emotion": "satisfied" if rating >= 4 else "disappointed" if rating <= 2 else "neutral"
+                        "sentiment_score": score,
+                        "main_emotion": emotion
                     },
-                    "identified_issues": [
-                        {
-                            "issue_category": "product_quality",
-                            "issue_description": "Требуется улучшение качества продукции",
-                            "severity_level": "medium",
-                            "mentioned_in_text": review_data.get('review_text', '')[:50] + "...",
-                            "potential_solutions": ["Улучшить контроль качества", "Обновить материалы"]
-                        }
-                    ] if rating < 4 else [],
+                    "mentioned_aspects": {
+                        "product_related": ["качество", "функциональность"],
+                        "service_related": [] if rating >= 4 else ["поддержка"],
+                        "logistics_related": []
+                    },
+                    "identified_issues": issues,
+                    "key_phrases": {
+                        "positive_phrases": ["хороший товар"] if rating >= 4 else [],
+                        "negative_phrases": ["требует улучшения"] if rating < 4 else [],
+                        "suggestions": []
+                    },
                     "summary": {
-                        "main_problem": "Требуется улучшение качества" if rating < 4 else "Отличный отзыв",
-                        "recommended_action": "improvement" if rating < 4 else "no_action",
-                        "priority_level": "medium" if rating < 4 else "low"
+                        "main_problem": "Требуется улучшение качества" if rating < 4 else "",
+                        "priority_level": "Средний" if rating < 4 else "Низкий",
+                        "recommended_action": "Мониторинг" if rating < 4 else "Без действий"
                     }
                 }
             },
             "meta": {
                 "model": "gpt://mock/yandexgpt/latest",
-                "tokens_used": 150,
+                "tokens_used": 200,
                 "timestamp": timezone.now().isoformat(),
                 "mock_mode": True
             }
@@ -357,7 +380,6 @@ try:
 except Exception as e:
     print(f"[ERROR] Не удалось инициализировать YandexGPT: {str(e)}")
 
-
     # Fallback на mock
     class MockYandexGPT:
         def analyze_review(self, data):
@@ -373,7 +395,7 @@ except Exception as e:
         def _mock_analysis(self, review_data):
             # Та же mock логика что выше
             rating = review_data.get('original_rating', 3)
-            product = review_data.get('product_model', 'Товар')
+            product = review_data.get('product_model')
 
             return {
                 "success": True,
@@ -382,16 +404,32 @@ except Exception as e:
                         "product_model": product,
                         "original_rating": rating,
                         "review_text": review_data.get('review_text', ''),
-                        "review_date": timezone.now().isoformat()
+                        "review_date": timezone.now().isoformat(),
+                        "extracted_rating_change": None
                     },
                     "generated_response": {
-                        "response_text": f"Спасибо за отзыв о '{product}'!",
-                        "response_tone": "neutral",
-                        "response_purpose": "thank"
+                        "response_text": f"Спасибо за отзыв о '{product if product else 'товаре'}'!",
+                        "response_tone": "Нейтральный",
+                        "response_purpose": "Поблагодарить",
+                        "key_points_addressed": []
                     },
                     "analysis": {
-                        "overall_sentiment": {"sentiment": "neutral", "sentiment_score": 0.0},
-                        "identified_issues": []
+                        "overall_sentiment": {
+                            "sentiment": "Нейтральный",
+                            "sentiment_score": 0.0,
+                            "main_emotion": "Нейтрален"
+                        },
+                        "identified_issues": [],
+                        "key_phrases": {
+                            "positive_phrases": [],
+                            "negative_phrases": [],
+                            "suggestions": []
+                        },
+                        "summary": {
+                            "main_problem": "",
+                            "priority_level": "Средний",
+                            "recommended_action": "Мониторинг"
+                        }
                     }
                 },
                 "meta": {
@@ -401,6 +439,5 @@ except Exception as e:
                     "mock_mode": True
                 }
             }
-
 
     yandex_gpt = MockYandexGPT()

@@ -1,6 +1,9 @@
 # ai_reviews/api/views.py
 import json
 import os
+import sys
+from pathlib import Path
+from venv import logger
 
 import requests
 from django.utils import timezone
@@ -10,9 +13,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 from .models import ReviewAnalysis
 from .serializers import ReviewAnalysisSerializer
+
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
 
 class TestConnectionView(APIView):
@@ -73,18 +80,9 @@ class AnalyzeReviewView(APIView):
     }
     """
     permission_classes = [AllowAny]
-    #permission_classes = [IsAuthenticated]
 
     def post(self, request):
         # Валидация
-        print("Куки в запросе:", request.COOKIES)
-        print("Сессия:", request.session)
-        print("Пользователь:", request.user)
-        print("Аутентифицирован?", request.user.is_authenticated)
-
-        # Проверьте, есть ли токен в куках
-        token_from_cookie = request.COOKIES.get('access_token') or request.COOKIES.get('auth_token')
-        print("Токен из куки:", token_from_cookie)
         review_text = request.data.get('review_text')
 
         if not review_text:
@@ -104,7 +102,6 @@ class AnalyzeReviewView(APIView):
             # Вызываем сервис Yandex GPT
             result = yandex_gpt.analyze_review(analysis_data)
 
-            print(result)
             # Сохраняем результат в БД
             review_analysis = ReviewAnalysis(
                 user=request.user,
@@ -113,11 +110,11 @@ class AnalyzeReviewView(APIView):
                 original_rating=analysis_data.get('original_rating'),
                 tokens_used=result.get('meta', {}).get('tokens_used', 0),
                 model_version=result.get('meta', {}).get('model', 'unknown'),
-                is_success=True
+                is_success=True,
+                # Сохраняем анализ как JSON объект
+                analysis_data=result.get('analysis', {})
             )
 
-            # Устанавливаем данные анализа через property
-            review_analysis.analysis_data = result.get('analysis', {})
             review_analysis.save()
 
             # Возвращаем результат
@@ -150,7 +147,6 @@ class AnalyzeReviewView(APIView):
                 'success': False,
                 'error': f'Internal server error: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class AnalysisHistoryView(APIView):
     """
@@ -205,7 +201,7 @@ class AnalysisDetailView(APIView):
                 user=request.user  # Только свои анализы
             )
             serializer = ReviewAnalysisSerializer(analysis)
-            return Response(serializer.data)
+            return Response('Data: ' + serializer.data)
         except ReviewAnalysis.DoesNotExist:
             return Response(
                 {'error': 'Анализ не найден'},
