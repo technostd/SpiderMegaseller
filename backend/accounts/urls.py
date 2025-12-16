@@ -13,4 +13,5 @@ urlpatterns = [
         ModuleSchemaView.as_view(),
         name='module-config-schema'
     ),
+
 ]

@@ -63,7 +63,7 @@ export default function ReviewAnalyzer({
         setError(null);
 
         try {
-            const response = await api.post('/ai-reviews/analyze/', {
+            const response = await api.post('/ai-reviews/demo/analyze/', {
                 review_text: form.review_text,
                 product_model: form.product_model,
                 original_rating: form.original_rating || '3',

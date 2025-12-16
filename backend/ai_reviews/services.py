@@ -1,13 +1,19 @@
 # ai_reviews/services.py
 
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import logging
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from accounts.models import ModuleConfigSchema
+from .models import OzonReview, ReviewAnalysis
 from backend.core.integrations.ozon import OzonServiceFactory, OzonAPIError
 from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
-from backend.accounts.models import ModuleConfigSchema
-from .models import ReviewAnalysis
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -15,16 +21,12 @@ logger = logging.getLogger(__name__)
 
 class OzonReviewProcessingService:
     """
-    Сервис для полной автоматической обработки неотвеченных отзывов в Ozon:
-    1. Получить отзывы
-    2. Сохранить в БД (если новые)
-    3. Проанализировать через Yandex GPT
-    4. Сохранить анализ
-    5. Отправить ответ в Ozon (если разрешено настройками)
+    Сервис для полной автоматической обработки неотвеченных отзывов в Ozon
     """
 
     def __init__(self, user: User):
         self.user = user
+
         # Получаем Ozon-учётные данные
         cred = self.user.credentials.filter(marketplace='ozon').first()
         if not cred:
@@ -34,6 +36,7 @@ class OzonReviewProcessingService:
             api_key=cred.api_key,
             client_id=cred.client_id
         )
+
         # Читаем конфиг модуля ai_reviews
         self.config = ModuleConfigSchema.get_config(
             user=self.user,
@@ -43,8 +46,7 @@ class OzonReviewProcessingService:
 
     def run(self, days_back: int = 30, limit: int = 100):
         """
-        Основной метод — запускает полный цикл обработки.
-        Возвращает dict с результатами.
+        Основной метод — запускает полный цикл обработки
         """
         try:
             # 1. Получаем неотвеченных отзывов из Ozon
@@ -52,6 +54,7 @@ class OzonReviewProcessingService:
                 days_back=days_back,
                 limit=limit
             )
+
             if not ozon_data.get('success'):
                 raise ValueError(f"Failed to fetch reviews: {ozon_data.get('error')}")
 
@@ -62,9 +65,9 @@ class OzonReviewProcessingService:
             for ozon_review in reviews:
                 try:
                     with transaction.atomic():
-                        # 2. Сохраняем отзыв в БД (если ещё нет)
-                        analysis = self._ensure_analysis_exists(ozon_review)
-                        if not analysis:
+                        # 2. Сохраняем или находим отзыв в БД
+                        review_obj = self._ensure_review_exists(ozon_review)
+                        if not review_obj:
                             results.append({
                                 'review_id': ozon_review.get('id'),
                                 'status': 'skipped',
@@ -72,7 +75,20 @@ class OzonReviewProcessingService:
                             })
                             continue
 
-                        # 3. Готовим текст ответа
+                        # 3. Проверяем, есть ли уже анализ
+                        analysis = review_obj.analyses.filter(is_success=True).first()
+                        if not analysis:
+                            # Создаём новый анализ
+                            analysis = self._create_analysis(review_obj, ozon_review)
+                            if not analysis or not analysis.is_success:
+                                results.append({
+                                    'review_id': ozon_review.get('id'),
+                                    'status': 'analysis_failed',
+                                    'analysis_id': analysis.id if analysis else None
+                                })
+                                continue
+
+                        # 4. Готовим текст ответа
                         response_text = analysis.generated_response
                         if not response_text.strip():
                             response_text = (
@@ -85,17 +101,15 @@ class OzonReviewProcessingService:
                         if len(response_text) > 10000:
                             response_text = response_text[:9997] + "..."
 
-                        # Обновляем анализ текстом ответа (на случай mock-режима)
-                        analysis.analysis_data.setdefault('generated_response', {})
-                        analysis.analysis_data['generated_response']['response_text'] = response_text
-                        analysis.save(update_fields=['analysis_data'])
-
-                        # 4. Решаем: отправлять или на модерацию?
+                        # 5. Решаем: отправлять или на модерацию?
                         premoderate = self.config.get('premoderate', False)
                         review_id = ozon_review['id']
 
                         if premoderate:
-                            # Оставляем в статусе 'pending' — фронт обнаружит и покажет в модерации
+                            # Обновляем статус отзыва
+                            review_obj.moderation_status = 'pending'
+                            review_obj.save(update_fields=['moderation_status'])
+
                             results.append({
                                 'review_id': review_id,
                                 'status': 'pending_moderation',
@@ -104,7 +118,7 @@ class OzonReviewProcessingService:
                             })
                             continue
 
-                        # 5. Отправляем ответ в Ozon
+                        # 6. Отправляем ответ в Ozon
                         ozon_resp = self.ozon_service.comment_review(
                             review_id=review_id,
                             text=response_text,
@@ -112,7 +126,16 @@ class OzonReviewProcessingService:
                         )
 
                         if ozon_resp['success']:
-                            # Обновляем запись анализа: помечаем как отправлено
+                            # Обновляем отзыв
+                            review_obj.has_answer = True
+                            review_obj.answer_text = response_text
+                            review_obj.answer_posted_at = timezone.now()
+                            review_obj.moderation_status = 'sent'
+                            if ozon_resp['data'].get('response_data', {}).get('comment_id'):
+                                review_obj.answer_ozon_id = ozon_resp['data']['response_data']['comment_id']
+                            review_obj.save()
+
+                            # Сохраняем метаданные в анализе
                             analysis.analysis_data.setdefault('meta', {})
                             analysis.analysis_data['meta']['sent_to_ozon_at'] = timezone.now().isoformat()
                             analysis.analysis_data['meta']['ozon_comment_id'] = \
@@ -161,86 +184,94 @@ class OzonReviewProcessingService:
             logger.exception("Critical error in OzonReviewProcessingService.run")
             return {'success': False, 'error': str(e)}
 
-    def _ensure_analysis_exists(self, ozon_review: dict):
+    def _ensure_review_exists(self, ozon_review: dict) -> OzonReview:
         """
-        Гарантирует, что для отзыва есть сохранённый анализ.
-        Возвращает ReviewAnalysis или None (если отзыв уже отвечен или пустой).
+        Сохраняет отзыв в БД, если его ещё нет
         """
         review_id = ozon_review['id']
         review_text = ozon_review.get('text', '').strip()
         product_info = ozon_review.get('product_info') or {}
         product_name = product_info.get('name', '')
 
-        # Пропускаем уже отвеченные
+        # Проверяем, есть ли уже ответ
         if ozon_review.get('company_answer') or ozon_review.get('company_answer_text'):
             return None
 
-        # Пропускаем пустые отзывы
+        # Проверяем, есть ли текст
         if not review_text:
             return None
 
-        # Пытаемся найти существующий анализ по уникальному ключу:
-        # review_text + product_model + user — не идеально, но работает при отсутствии OzonReview
-        # В будущем заменим на external_id после миграции
         try:
-            analysis = ReviewAnalysis.objects.get(
+            # Пробуем найти существующий отзыв
+            review_obj = OzonReview.objects.get(
                 user=self.user,
-                review_text=review_text,
-                product_model=product_name,
-                original_rating=ozon_review.get('rating')
+                review_id=review_id
             )
-            logger.info(f"Анализ уже существует: #{analysis.id}")
-            return analysis
-        except ReviewAnalysis.DoesNotExist:
-            pass
+            logger.info(f"Отзыв уже существует: #{review_obj.id}")
+            return review_obj
+        except OzonReview.DoesNotExist:
+            # Создаём новый отзыв
+            review_obj = OzonReview.objects.create(
+                user=self.user,
+                review_id=review_id,
+                product_id=ozon_review.get('product_id', 0),
+                offer_id=ozon_review.get('offer_id', ''),
+                sku=ozon_review.get('sku', ''),
+                text=review_text,
+                rating=ozon_review.get('rating'),
+                created_at=ozon_review.get('created_at') or timezone.now(),
+                product_name=product_name,
+                product_characteristics=product_info.get('characteristics', {}),
+                has_answer=False,
+                moderation_status='not_submitted'
+            )
+            logger.info(f"Создан новый отзыв: #{review_obj.id} для Ozon review #{review_id}")
+            return review_obj
 
-        # Создаём новый анализ
+    def _create_analysis(self, review_obj: OzonReview, ozon_review: dict) -> ReviewAnalysis:
+        """
+        Создаёт анализ для отзыва через Yandex GPT
+        """
         try:
             # Анализ через Yandex GPT
             gpt_input = {
-                'review_text': review_text,
-                'product_model': product_name,
-                'original_rating': ozon_review.get('rating')
+                'review_text': review_obj.text,
+                'product_model': review_obj.product_name,
+                'original_rating': review_obj.rating
             }
+
             gpt_result = yandex_gpt.analyze_review(gpt_input)
 
             analysis = ReviewAnalysis.objects.create(
-                user=self.user,
-                review_text=review_text,
-                product_model=product_name,
-                original_rating=ozon_review.get('rating'),
+                review=review_obj,
                 analysis_data=gpt_result.get('analysis', {}),
                 tokens_used=gpt_result.get('meta', {}).get('tokens_used', 0),
                 model_version=gpt_result.get('meta', {}).get('model', 'unknown'),
                 is_success=True,
-                # Добавляем метаданные Ozon-отзыва
+                error_message=''
             )
-            # Сохраняем Ozon ID в analysis_data.meta для отслеживания
+
+            # Сохраняем метаданные
             analysis.analysis_data.setdefault('meta', {})
-            analysis.analysis_data['meta']['ozon_review_id'] = review_id
-            analysis.analysis_data['meta']['ozon_product_id'] = ozon_review.get('product_id')
-            analysis.analysis_data['meta']['created_at_ozon'] = ozon_review.get('created_at')
+            analysis.analysis_data['meta']['ozon_review_id'] = review_obj.review_id
+            analysis.analysis_data['meta']['created_at_ozon'] = review_obj.created_at.isoformat()
             analysis.save(update_fields=['analysis_data'])
 
-            logger.info(f"Создан новый анализ: #{analysis.id} для отзыва Ozon #{review_id}")
+            logger.info(f"Создан анализ: #{analysis.id} для отзыва #{review_obj.id}")
             return analysis
 
         except YandexGPTError as e:
-            logger.error(f"GPT error for Ozon review {review_id}: {e}")
-            # Даже при ошибке создаём заглушку (чтобы не пытаться снова)
-            analysis = ReviewAnalysis.objects.create(
-                user=self.user,
-                review_text=review_text,
-                product_model=product_name,
-                original_rating=ozon_review.get('rating'),
+            logger.error(f"GPT error for review {review_obj.id}: {e}")
+            # Создаём запись об ошибке
+            return ReviewAnalysis.objects.create(
+                review=review_obj,
                 is_success=False,
                 error_message=str(e),
                 analysis_data={
                     'meta': {
-                        'ozon_review_id': review_id,
+                        'ozon_review_id': review_obj.review_id,
                         'error': str(e),
                         'fallback_mode': True
                     }
                 }
             )
-            return None  # не отправляем ошибочные

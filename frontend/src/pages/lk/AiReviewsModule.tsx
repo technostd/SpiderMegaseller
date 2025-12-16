@@ -1,8 +1,8 @@
 // src/pages/lk/AiReviewsModule.tsx
 import { useState, useEffect } from 'react';
 import ReviewAnalyzer from '../../components/ReviewAnalyzer';
-import Layout from "../../components/Layout.tsx";
 import {usePageSubtitle} from "../../hooks/usePageTitle.ts";
+import DashboardLayout from "../../components/DashboardLayout.tsx";
 
 export default function AiReviewsModule() {
 
@@ -135,7 +135,7 @@ export default function AiReviewsModule() {
 
 
   return (
-    <Layout>
+    <DashboardLayout>
       <div className="min-h-screen bg-background">
         <main className="container mx-auto py-8 space-y-8 ">
           {/* Заголовок как на скриншоте */}
@@ -300,7 +300,7 @@ export default function AiReviewsModule() {
           </div>
         </main>
       </div>
-    </Layout>
+    </DashboardLayout>
   );
 }
 

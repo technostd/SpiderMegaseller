@@ -1,224 +1,79 @@
 # ai_reviews/api/views.py
+
 import json
-import os
-import sys
+import logging
 from pathlib import Path
-from venv import logger
+import sys
 
 import requests
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import ReviewAnalysis
-from .serializers import ReviewAnalysisSerializer
+from .models import OzonReview, ReviewAnalysis
+from .serializers import ReviewAnalysisSerializer, OzonReviewSerializer
 from .services import OzonReviewProcessingService
-
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
 
 from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
+logger = logging.getLogger(__name__)
+
+# --- Вспомогательная пагинация ---
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+# ============== Тесты ==============
 
 class TestConnectionView(APIView):
     """Тест подключения к Yandex GPT API"""
-    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Проверяем базовые настройки
             test_result = {
                 "api_key_set": bool(yandex_gpt.api_key),
                 "folder_id": yandex_gpt.folder_id,
                 "model_name": yandex_gpt.model_name,
                 "base_url": yandex_gpt.base_url,
                 "model_uri": f"gpt://{yandex_gpt.folder_id}/{yandex_gpt.model_name}",
-                "timestamp": timezone.now().isoformat()
+                "timestamp": timezone.now().isoformat(),
+                "python_version": sys.version,
+                "django_version": "4.2.0"
             }
 
-            # Пробуем реальный запрос к API
             try:
                 api_test = yandex_gpt.test_connection()
                 test_result.update(api_test)
-
-                if api_test.get("success"):
-                    test_result["status"] = "✅ API подключено успешно"
-                else:
-                    test_result["status"] = f"❌ Ошибка API: {api_test.get('error')}"
-
+                test_result["status"] = "✅ API подключено успешно" if api_test.get("success") else \
+                    f"❌ Ошибка API: {api_test.get('error')}"
             except Exception as e:
                 test_result["api_test_error"] = str(e)
                 test_result["status"] = f"❌ Ошибка теста: {str(e)}"
 
-            # Дополнительная информация
-            test_result["python_version"] = os.sys.version
-            test_result["django_version"] = "4.2.0"
-
             return Response(test_result)
 
         except Exception as e:
+            logger.exception("TestConnectionView failed")
             return Response(
-                {
-                    "error": str(e),
-                    "type": type(e).__name__,
-                    "status": "❌ Критическая ошибка"
-                },
+                {"error": str(e), "type": type(e).__name__, "status": "❌ Критическая ошибка"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class AnalyzeReviewView(APIView):
-    """
-    API для анализа отзыва через Yandex GPT
 
-    POST /api/ai-reviews/analyze/
-    {
-        "review_text": "текст отзыва",
-        "product_model": "название товара",
-        "original_rating": 4
-    }
-    """
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        # Валидация
-        review_text = request.data.get('review_text')
-
-        if not review_text:
-            return Response(
-                {'error': 'Поле review_text обязательно'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Подготовка данных для анализа
-        analysis_data = {
-            'review_text': review_text,
-            'product_model': request.data.get('product_model'),
-            'original_rating': request.data.get('original_rating')
-        }
-
-        try:
-            # Вызываем сервис Yandex GPT
-            result = yandex_gpt.analyze_review(analysis_data)
-
-            # Сохраняем результат в БД
-            review_analysis = ReviewAnalysis(
-                user=request.user,
-                review_text=analysis_data['review_text'],
-                product_model=analysis_data.get('product_model'),
-                original_rating=analysis_data.get('original_rating'),
-                tokens_used=result.get('meta', {}).get('tokens_used', 0),
-                model_version=result.get('meta', {}).get('model', 'unknown'),
-                is_success=True,
-                # Сохраняем анализ как JSON объект
-                analysis_data=result.get('analysis', {})
-            )
-
-            review_analysis.save()
-
-            # Возвращаем результат
-            return Response({
-                'success': True,
-                'analysis_id': review_analysis.id,
-                'data': ReviewAnalysisSerializer(review_analysis).data,
-                'meta': result.get('meta', {})
-            })
-
-        except YandexGPTError as e:
-            # Сохраняем ошибку в БД
-            review_analysis = ReviewAnalysis.objects.create(
-                user=request.user,
-                review_text=analysis_data['review_text'],
-                product_model=analysis_data.get('product_model'),
-                original_rating=analysis_data.get('original_rating'),
-                is_success=False,
-                error_message=str(e)
-            )
-
-            return Response({
-                'success': False,
-                'error': str(e),
-                'analysis_id': review_analysis.id
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        except Exception as e:
-            return Response({
-                'success': False,
-                'error': f'Internal server error: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class AnalysisHistoryView(APIView):
-    """
-    История анализов пользователя
-    """
-
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        analyses = ReviewAnalysis.objects.filter(
-            user=request.user
-        ).order_by('-created_at')
-
-        page = self.paginate_queryset(analyses)
-        if page is not None:
-            serializer = ReviewAnalysisSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = ReviewAnalysisSerializer(analyses, many=True)
-        return Response(serializer.data)
-
-    def paginate_queryset(self, queryset):
-        """Простая пагинация"""
-        from rest_framework.pagination import PageNumberPagination
-
-        paginator = PageNumberPagination()
-        paginator.page_size = 10
-        return paginator.paginate_queryset(queryset, self.request, view=self)
-
-    def get_paginated_response(self, data):
-        from rest_framework.pagination import PageNumberPagination
-
-        paginator = PageNumberPagination()
-        return paginator.get_paginated_response(data)
-
-
-class AnalysisDetailView(APIView):
-    """
-    Детали конкретного анализа
-    """
-
-    authentication_classes = [SessionAuthentication]  # Явно указываем
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, analysis_id):
-
-
-        try:
-            analysis = ReviewAnalysis.objects.get(
-                id=analysis_id,
-                user=request.user  # Только свои анализы
-            )
-            serializer = ReviewAnalysisSerializer(analysis)
-            return Response('Data: ' + serializer.data)
-        except ReviewAnalysis.DoesNotExist:
-            return Response(
-                {'error': 'Анализ не найден'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-
-# ai_reviews/views.py - добавим новый класс
 class DirectApiTestView(APIView):
     """Прямой тест API Yandex GPT"""
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Прямой вызов API с кастомным промптом"""
         try:
             prompt = request.data.get('prompt', 'Привет! Как дела?')
 
@@ -235,28 +90,15 @@ class DirectApiTestView(APIView):
                     "temperature": 0.2,
                     "maxTokens": "100"
                 },
-                "messages": [
-                    {
-                        "role": "user",
-                        "text": prompt
-                    }
-                ]
+                "messages": [{"role": "user", "text": prompt}]
             }
 
-            print(f"[DIRECT TEST] Sending request to {yandex_gpt.base_url}")
-            print(f"[DIRECT TEST] Data: {json.dumps(data, indent=2)}")
-
-            response = requests.post(
-                yandex_gpt.base_url,
-                headers=headers,
-                json=data,
-                timeout=30
-            )
+            logger.info(f"[DIRECT TEST] Sending to {yandex_gpt.base_url}")
+            response = requests.post(yandex_gpt.base_url, headers=headers, json=data, timeout=30)
 
             result = {
                 "success": response.status_code == 200,
                 "status_code": response.status_code,
-                "headers": dict(response.headers),
                 "request_data": data
             }
 
@@ -268,29 +110,157 @@ class DirectApiTestView(APIView):
             return Response(result)
 
         except Exception as e:
+            logger.exception("DirectApiTestView failed")
             return Response(
-                {
-                    "success": False,
-                    "error": str(e),
-                    "type": type(e).__name__
-                },
+                {"success": False, "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# ============== Анализ отзывов ==============
+
+class AnalyzeReviewView(APIView):
+    """
+    Анализ существующего отзыва Ozon через Yandex GPT.
+    POST /api/ai-reviews/analyze/
+    {
+        "ozon_review_id": 123456789   # ← review_id из Ozon (не pk!)
+    }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        review_id = request.data.get('ozon_review_id')
+        if not review_id:
+            return Response(
+                {'error': 'Поле ozon_review_id обязательно'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Находим отзыв текущего пользователя по Ozon review_id
+        try:
+            ozon_review = OzonReview.objects.get(
+                user=request.user,
+                review_id=review_id
+            )
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': f'Отзыв с ID {review_id} не найден'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        existing_analysis = ozon_review.analyses.filter(is_success=True).first()
+        if existing_analysis:
+            return Response({
+                'message': 'Анализ уже существует',
+                'analysis': ReviewAnalysisSerializer(existing_analysis).data
+            })
+
+        try:
+            # Подготовка данных из модели — как в вашей логике
+            analysis_input = {
+                'review_text': ozon_review.text,
+                'product_model': ozon_review.product_name,
+                'original_rating': ozon_review.rating,
+                'product_characteristics': ozon_review.product_characteristics
+            }
+
+            # Вызов Yandex GPT
+            result = yandex_gpt.analyze_review(analysis_input)
+
+            # Сохраняем анализ, привязанный к отзыву
+            analysis = ReviewAnalysis.objects.create(
+                review=ozon_review,
+                analysis_data=result.get('analysis', {}),
+                tokens_used=result.get('meta', {}).get('tokens_used', 0),
+                model_version=result.get('meta', {}).get('model', 'unknown'),
+                is_success=True
+            )
+
+            return Response({
+                'success': True,
+                'analysis_id': analysis.id,
+                'data': ReviewAnalysisSerializer(analysis).data,
+                'meta': result.get('meta', {})
+            }, status=status.HTTP_201_CREATED)
+
+        except YandexGPTError as e:
+            # Сохраняем неудачный анализ
+            analysis = ReviewAnalysis.objects.create(
+                review=ozon_review,
+                is_success=False,
+                error_message=str(e)
+            )
+            return Response({
+                'success': False,
+                'error': str(e),
+                'analysis_id': analysis.id
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as e:
+            logger.exception("AnalyzeReviewView failed for review_id=%s", review_id)
+            return Response({
+                'success': False,
+                'error': f'Internal error: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AnalysisHistoryView(APIView):
+    """История анализов пользователя (через связанные отзывы)"""
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+
+    def get(self, request):
+        # Только анализы отзывов текущего пользователя
+        analyses = ReviewAnalysis.objects.filter(
+            review__user=request.user
+        ).select_related('review').order_by('-created_at')
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(analyses, request)
+        if page is not None:
+            serializer = ReviewAnalysisSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = ReviewAnalysisSerializer(analyses, many=True)
+        return Response(serializer.data)
+
+
+class AnalysisDetailView(APIView):
+    """Детали конкретного анализа"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, analysis_id):
+        try:
+            analysis = ReviewAnalysis.objects.select_related('review').get(
+                id=analysis_id,
+                review__user=request.user  # только свои
+            )
+            serializer = ReviewAnalysisSerializer(analysis)
+            return Response(serializer.data)  # ← ИСПРАВЛЕНО: не конкатенировать строку!
+        except ReviewAnalysis.DoesNotExist:
+            return Response(
+                {'error': 'Анализ не найден'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+# ============== Обработка Ozon-отзывов ==============
 
 class ProcessOzonReviewsView(APIView):
     """
     POST /api/ai-reviews/process-ozon/
-    Обрабатывает неотвеченные отзывы в Ozon:
-    - получает,
-    - сохраняет,
-    - анализирует,
-    - отвечает (если премодерация выключена).
+    Запуск полного цикла:
+    - загрузка отзывов из Ozon за N дней,
+    - сохранение в OzonReview,
+    - анализ через Yandex GPT → ReviewAnalysis,
+    - (опционально) отправка ответов.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         days_back = int(request.data.get('days_back', 30))
-        if days_back < 1 or days_back > 90:
+        if not (1 <= days_back <= 90):
             return Response(
                 {'error': 'days_back must be between 1 and 90'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -301,13 +271,73 @@ class ProcessOzonReviewsView(APIView):
             result = processor.run(days_back=days_back)
             return Response(result)
         except ValueError as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.exception("ProcessOzonReviewsView failed")
             return Response(
                 {'error': 'Internal error', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class DemoAnalyzeView(APIView):
+    """
+    Демо-анализ текста отзыва БЕЗ привязки к Ozon.
+    Не сохраняет данные в БД (или сохраняет анонимно — см. ниже).
+    Используется для фронтенда, демо, тестов.
+
+    POST /api/ai-reviews/demo/analyze/
+    {
+        "review_text": "Ужасный товар, сломался через день!",
+        "product_name": "Беспроводные наушники XYZ-200",
+        "rating": 2
+    }
+    """
+    permission_classes = [AllowAny]  # можно и IsAuthenticated — как нужно
+
+    def post(self, request):
+        review_text = request.data.get('review_text')
+        product_name = request.data.get('product_name', '')
+        rating = request.data.get('rating')
+
+        if not review_text:
+            return Response(
+                {'error': 'review_text обязателен'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Подготавливаем данные, как будто есть OzonReview
+            analysis_input = {
+                'review_text': review_text,
+                'product_model': product_name,
+                'original_rating': rating,
+                'product_characteristics': {}  # или request.data.get('characteristics', {})
+            }
+
+            result = yandex_gpt.analyze_review(analysis_input)
+
+            # ⚠️ НЕ СОХРАНЯЕМ в ReviewAnalysis — только возвращаем результат
+            return Response({
+                'success': True,
+                'demo': True,
+                'analysis': result.get('analysis', {}),
+                'meta': result.get('meta', {}),
+                'generated_response': result.get('analysis', {}).get('generated_response', {}).get('response_text', ''),
+                'sentiment': result.get('analysis', {}).get('overall_sentiment', {}).get('sentiment', ''),
+                'issues_count': len(result.get('analysis', {}).get('identified_issues', []))
+            }, status=status.HTTP_200_OK)
+
+        except YandexGPTError as e:
+            return Response({
+                'success': False,
+                'demo': True,
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            logger.exception("DemoAnalyzeView failed")
+            return Response({
+                'success': False,
+                'demo': True,
+                'error': f'Internal error: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
