@@ -346,7 +346,7 @@ class OzonService:
                             cutoff_date = timezone.now() - timedelta(days=days_back)
 
                             if review_date < cutoff_date:
-                                continue  # Пропускаем старые отзывы
+                                continue
                         except:
                             pass
 

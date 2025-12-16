@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .models import ReviewAnalysis
 from .serializers import ReviewAnalysisSerializer
+from .services import OzonReviewProcessingService
 
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
@@ -24,7 +25,8 @@ from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
 class TestConnectionView(APIView):
     """Тест подключения к Yandex GPT API"""
-    permission_classes = [AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
@@ -79,7 +81,8 @@ class AnalyzeReviewView(APIView):
         "original_rating": 4
     }
     """
-    permission_classes = [AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         # Валидация
@@ -153,6 +156,7 @@ class AnalysisHistoryView(APIView):
     История анализов пользователя
     """
 
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -187,7 +191,6 @@ class AnalysisDetailView(APIView):
     """
     Детали конкретного анализа
     """
-
 
     authentication_classes = [SessionAuthentication]  # Явно указываем
     permission_classes = [IsAuthenticated]
@@ -271,5 +274,40 @@ class DirectApiTestView(APIView):
                     "error": str(e),
                     "type": type(e).__name__
                 },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class ProcessOzonReviewsView(APIView):
+    """
+    POST /api/ai-reviews/process-ozon/
+    Обрабатывает неотвеченные отзывы в Ozon:
+    - получает,
+    - сохраняет,
+    - анализирует,
+    - отвечает (если премодерация выключена).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        days_back = int(request.data.get('days_back', 30))
+        if days_back < 1 or days_back > 90:
+            return Response(
+                {'error': 'days_back must be between 1 and 90'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            processor = OzonReviewProcessingService(request.user)
+            result = processor.run(days_back=days_back)
+            return Response(result)
+        except ValueError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.exception("ProcessOzonReviewsView failed")
+            return Response(
+                {'error': 'Internal error', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

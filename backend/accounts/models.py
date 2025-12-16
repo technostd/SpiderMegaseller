@@ -1,7 +1,79 @@
 # accounts/models.py
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django_cryptography.fields import encrypt
+import jsonschema
+from typing import Dict, Any, Optional
+
+class ModuleConfigSchema:
+    """
+    Схемы конфигурации модулей.
+    Обеспечивает строгую типизацию и расширяемость без изменения структуры БД.
+    """
+    SCHEMAS = {
+        'ai_reviews': {
+            "type": "object",
+            "properties": {
+                "premoderate": {"type": "boolean"},
+                "auto_publish_positive": {"type": "boolean"},
+                "default_tone": {
+                    "type": "string",
+                    "enum": ["нейтральный", "благодарный", "извиняющийся", "дружелюбный"]
+                },
+                "max_response_length": {
+                    "type": "integer",
+                    "minimum": 50,
+                    "maximum": 10000
+                }
+            },
+            "required": [],
+            "additionalProperties": False
+        },
+        # Пример расширения:
+        # 'price_optimizer': {
+        #     "type": "object",
+        #     "properties": {
+        #         "enabled": {"type": "boolean"},
+        #         "max_discount_percent": {"type": "number", "minimum": 0, "maximum": 50}
+        #     }
+        # }
+    }
+
+    @classmethod
+    def get_schema(cls, module_name: str) -> dict:
+        return cls.SCHEMAS.get(module_name, {})
+
+    @classmethod
+    def validate(cls, module_name: str, config: dict) -> bool:
+        """
+        Валидирует конфиг по схеме.
+        Возвращает True или поднимает ValueError.
+        """
+        schema = cls.get_schema(module_name)
+        if not schema:
+            return True  # без схемы — проходит валидацию (opt-in)
+        try:
+            jsonschema.validate(instance=config, schema=schema)
+        except jsonschema.ValidationError as e:
+            raise ValueError(f"Invalid config for '{module_name}': {e.message}")
+        return True
+
+    @classmethod
+    def normalize(cls, module_name: str, config: dict) -> dict:
+        """
+        Приводит конфиг к ожидаемой структуре с fallback-значениями.
+        """
+        if module_name == 'ai_reviews':
+            return {
+                'premoderate': bool(config.get('premoderate', False)),
+                'auto_publish_positive': bool(config.get('auto_publish_positive', True)),
+                'default_tone': config.get('default_tone', 'нейтральный'),
+                'max_response_length': int(config.get('max_response_length', 1000)),
+            }
+        # По умолчанию — как есть
+        return config.copy()
 
 
 class UserProfile(models.Model):
@@ -62,3 +134,87 @@ class MarketplaceCredentials(models.Model):
 
     def __str__(self):
         return f"{self.user.email} — {self.get_marketplace_display()}"
+
+User = get_user_model()
+
+class UserModuleConfig(models.Model):
+    """
+    Пользовательские настройки модулей.
+    Примеры:
+      - module_name = 'ai_reviews'
+        config_data = {
+          "premoderate": true,
+          "auto_publish_positive": false,
+          "default_tone": "нейтральный",
+          "max_response_length": 500
+        }
+      - module_name = 'price_optimizer'
+        config_data = { "enabled": true, "max_discount": 15 }
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='module_configs'
+    )
+    module_name = models.CharField(
+        max_length=100,
+        help_text="Имя модуля (например, 'ai_reviews')"
+    )
+    config_data = models.JSONField(
+        default=dict,
+        encoder=DjangoJSONEncoder,
+        blank=True,
+        help_text="Конфигурация в формате JSON"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Конфигурация модуля"
+        verbose_name_plural = "Конфигурации модулей"
+        unique_together = ('user', 'module_name')
+        indexes = [
+            models.Index(fields=['user', 'module_name']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} → {self.module_name}"
+
+    @classmethod
+    def get_config(cls, user, module_name: str, default: dict = None) -> dict:
+        """
+        Возвращает нормализованный конфиг модуля, подгружая из БД или возвращая default.
+        """
+        if default is None:
+            default = {}
+
+        try:
+            obj = cls.objects.get(user=user, module_name=module_name)
+            raw_config = obj.config_data or {}
+            try:
+                ModuleConfigSchema.validate(module_name, raw_config)
+                return ModuleConfigSchema.normalize(module_name, raw_config)
+            except ValueError:
+                # Если в БД оказался невалидный конфиг — возвращаем нормализованный fallback
+                return ModuleConfigSchema.normalize(module_name, default)
+        except cls.DoesNotExist:
+            return ModuleConfigSchema.normalize(module_name, default)
+
+    @classmethod
+    def set_config(cls, user, module_name: str, config: dict) -> 'UserModuleConfig':
+        """
+        Сохраняет конфиг после валидации и нормализации.
+        """
+        # Валидация перед сохранением
+        if not ModuleConfigSchema.validate(module_name, config):
+            raise ValueError("Validation skipped — should not happen")
+
+        # Нормализация (с fallback)
+        normalized = ModuleConfigSchema.normalize(module_name, config)
+
+        obj, created = cls.objects.update_or_create(
+            user=user,
+            module_name=module_name,
+            defaults={'config_data': normalized}
+        )
+        return obj
