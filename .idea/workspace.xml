@@ -4,27 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aa4c674-25c6-4ecf-a308-957844ead44c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/TestContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/contexts/AuthProvider.tsx" afterDir="false" />
+    <list default="true" id="8aa4c674-25c6-4ecf-a308-957844ead44c" name="Changes" comment="технический">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SpiderMegaseller.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SpiderMegaseller.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accounts/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accounts/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/integrations/ozon.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/integrations/ozon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/backend/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/client.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/PrivateRoute.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/PrivateRoute.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/usePageTitle.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/usePageTitle.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/ModuleSettings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/ModuleSettings.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,9 +58,11 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.all_code.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
@@ -82,6 +78,36 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\dev\SpiderMegaseller\frontend\src\pages\lk" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="all_code" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SpiderMegaseller" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../all_code.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.all_code" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -102,8 +128,25 @@
       <workItem from="1764764641023" duration="1134000" />
       <workItem from="1764770223467" duration="34351000" />
       <workItem from="1764815294432" duration="321000" />
-      <workItem from="1764816173314" duration="8734000" />
+      <workItem from="1764816173314" duration="17943000" />
     </task>
+    <task id="LOCAL-00001" summary="доработка логики авторизации">
+      <option name="closed" value="true" />
+      <created>1765263833803</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1765263833803</updated>
+    </task>
+    <task id="LOCAL-00002" summary="технический">
+      <option name="closed" value="true" />
+      <created>1765432773238</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1765432773238</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -126,5 +169,13 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="доработка логики авторизации" />
+    <MESSAGE value="технический" />
+    <option name="LAST_COMMIT_MESSAGE" value="технический" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/SpiderMegaseller$all_code.coverage" NAME="all_code Coverage Results" MODIFIED="1765883962999" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
   </component>
 </project>

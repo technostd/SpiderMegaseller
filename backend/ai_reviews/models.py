@@ -10,25 +10,12 @@ class ReviewAnalysis(models.Model):
     """
     Модель для сохранения результатов анализа отзывов
     """
-    user = models.ForeignKey(
-        User,
+    review = models.OneToOneField(
+        OzonReview,
         on_delete=models.CASCADE,
-        related_name='review_analyses',
-        verbose_name='Пользователь'
-    )
-
-    # Исходные данные
-    review_text = models.TextField(verbose_name='Текст отзыва')
-    product_model = models.CharField(
-        max_length=255,
-        verbose_name='Модель товара',
-        null=True,
-        blank=True
-    )
-    original_rating = models.IntegerField(
-        verbose_name='Исходная оценка',
-        null=True,
-        blank=True
+        related_name='analysis',
+        verbose_name='Отзыв',
+        null=True,  # пока для миграции
     )
 
     # Результат анализа от Yandex GPT (храним как JSONField)
@@ -70,7 +57,8 @@ class ReviewAnalysis(models.Model):
         ]
 
     def __str__(self):
-        return f"Анализ отзыва #{self.id} от {self.user}"
+        review_id = self.review.review_id if self.review else 'N/A'
+        return f"Анализ отзыва Ozon #{review_id} от {self.review.user if self.review else '—'}"
 
     @property
     def generated_response(self) -> str:
@@ -106,3 +94,69 @@ class ReviewAnalysis(models.Model):
     def analysis_results(self) -> dict:
         """Результаты анализа"""
         return self.analysis_data.get('analysis', {})
+
+
+
+class OzonReview(models.Model):
+    """
+    Отзыв из Ozon. Только Ozon. Максимально просто.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='ozon_reviews',
+        verbose_name='Пользователь'
+    )
+
+    # Ozon IDs
+    review_id = models.BigIntegerField('ID отзыва в Ozon', db_index=True)
+    product_id = models.BigIntegerField('ID товара в Ozon')
+    offer_id = models.CharField('Offer ID', max_length=200, blank=True)
+    sku = models.CharField('SKU', max_length=100, blank=True)
+
+    # Отзыв
+    text = models.TextField('Текст отзыва')
+    rating = models.PositiveSmallIntegerField('Оценка', null=True)
+    created_at = models.DateTimeField('Дата создания отзыва в Ozon')
+
+    # Товар (копируем из API один раз)
+    product_name = models.CharField('Название товара', max_length=500, blank=True)
+    product_characteristics = models.JSONField('Характеристики товара', default=dict, blank=True)
+
+    # Ответ
+    has_answer = models.BooleanField('Есть ответ?', default=False)
+    answer_text = models.TextField('Текст ответа', blank=True)
+    answer_posted_at = models.DateTimeField('Ответ отправлен', null=True, blank=True)
+    answer_ozon_id = models.CharField('ID комментария в Ozon', max_length=100, blank=True)
+
+    # Статус
+    moderation_status = models.CharField(
+        'Статус модерации',
+        max_length=20,
+        choices=[
+            ('not_submitted', 'Не отправлено'),
+            ('pending', 'На модерации'),
+            ('sent', 'Отправлено'),
+        ],
+        default='not_submitted',
+        db_index=True
+    )
+
+    created_local = models.DateTimeField(auto_now_add=True)
+    updated_local = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Ozon отзыв'
+        verbose_name_plural = 'Ozon отзывы'
+        unique_together = [('user', 'review_id')]
+        indexes = [
+            models.Index(fields=['user', 'has_answer', 'created_at']),
+            models.Index(fields=['moderation_status']),
+        ]
+
+    def __str__(self):
+        return f"OzonReview #{self.review_id} — {self.user.email}"
+
+    @property
+    def short_text(self):
+        return (self.text[:100] + '...') if len(self.text) > 100 else self.text
