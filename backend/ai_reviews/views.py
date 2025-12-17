@@ -17,21 +17,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import OzonReview, ReviewAnalysis
-from .serializers import ReviewAnalysisSerializer, OzonReviewSerializer
+from .serializers import ReviewAnalysisSerializer
 from .services import OzonReviewProcessingService
 
 from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
 logger = logging.getLogger(__name__)
 
-# --- Вспомогательная пагинация ---
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-
-# ============== Тесты ==============
 
 class TestConnectionView(APIView):
     """Тест подключения к Yandex GPT API"""
@@ -117,8 +115,6 @@ class DirectApiTestView(APIView):
             )
 
 
-# ============== Анализ отзывов ==============
-
 class AnalyzeReviewView(APIView):
     """
     Анализ существующего отзыва Ozon через Yandex GPT.
@@ -137,7 +133,6 @@ class AnalyzeReviewView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Находим отзыв текущего пользователя по Ozon review_id
         try:
             ozon_review = OzonReview.objects.get(
                 user=request.user,
@@ -157,7 +152,6 @@ class AnalyzeReviewView(APIView):
             })
 
         try:
-            # Подготовка данных из модели — как в вашей логике
             analysis_input = {
                 'review_text': ozon_review.text,
                 'product_model': ozon_review.product_name,
@@ -165,10 +159,8 @@ class AnalyzeReviewView(APIView):
                 'product_characteristics': ozon_review.product_characteristics
             }
 
-            # Вызов Yandex GPT
             result = yandex_gpt.analyze_review(analysis_input)
 
-            # Сохраняем анализ, привязанный к отзыву
             analysis = ReviewAnalysis.objects.create(
                 review=ozon_review,
                 analysis_data=result.get('analysis', {}),
@@ -185,7 +177,6 @@ class AnalyzeReviewView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except YandexGPTError as e:
-            # Сохраняем неудачный анализ
             analysis = ReviewAnalysis.objects.create(
                 review=ozon_review,
                 is_success=False,
@@ -211,7 +202,6 @@ class AnalysisHistoryView(APIView):
     pagination_class = StandardResultsSetPagination
 
     def get(self, request):
-        # Только анализы отзывов текущего пользователя
         analyses = ReviewAnalysis.objects.filter(
             review__user=request.user
         ).select_related('review').order_by('-created_at')
@@ -234,18 +224,16 @@ class AnalysisDetailView(APIView):
         try:
             analysis = ReviewAnalysis.objects.select_related('review').get(
                 id=analysis_id,
-                review__user=request.user  # только свои
+                review__user=request.user
             )
             serializer = ReviewAnalysisSerializer(analysis)
-            return Response(serializer.data)  # ← ИСПРАВЛЕНО: не конкатенировать строку!
+            return Response(serializer.data)
         except ReviewAnalysis.DoesNotExist:
             return Response(
                 {'error': 'Анализ не найден'},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-
-# ============== Обработка Ozon-отзывов ==============
 
 class ProcessOzonReviewsView(APIView):
     """
@@ -279,6 +267,7 @@ class ProcessOzonReviewsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class DemoAnalyzeView(APIView):
     """
     Демо-анализ текста отзыва БЕЗ привязки к Ozon.
@@ -306,17 +295,15 @@ class DemoAnalyzeView(APIView):
             )
 
         try:
-            # Подготавливаем данные, как будто есть OzonReview
             analysis_input = {
                 'review_text': review_text,
                 'product_model': product_name,
                 'original_rating': rating,
-                'product_characteristics': {}  # или request.data.get('characteristics', {})
+                'product_characteristics': {}
             }
 
             result = yandex_gpt.analyze_review(analysis_input)
 
-            # ⚠️ НЕ СОХРАНЯЕМ в ReviewAnalysis — только возвращаем результат
             return Response({
                 'success': True,
                 'demo': True,

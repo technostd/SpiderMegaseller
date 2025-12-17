@@ -64,13 +64,11 @@ class OzonService:
             else:
                 raise OzonAPIError(f"Неподдерживаемый метод: {method}")
 
-            # Логируем для дебага
             print(f"[OzonAPI] {method} {endpoint} - Status: {response.status_code}")
 
             if response.status_code == 200:
                 result = response.json()
 
-                # Проверяем наличие ошибок в ответе
                 if result.get("error"):
                     error_msg = result["error"].get("message", "Unknown error")
                     raise OzonAPIError(f"Ozon API error: {error_msg}")
@@ -115,12 +113,11 @@ class OzonService:
             Список отзывов с дополнительной информацией
         """
         try:
-            # 1. Получаем базовый список отзывов
             data = {
                 "filter": {
                     "visibility": status.upper()
                 },
-                "limit": min(limit, 1000),  # Ozon ограничивает 1000
+                "limit": min(limit, 1000),
                 "offset": offset,
                 "with_photo": True,
                 "with_rating": with_ratings
@@ -133,7 +130,6 @@ class OzonService:
 
             print(f"[OzonAPI] Получено {len(reviews)} отзывов из {total}")
 
-            # 2. Если нужно, обогащаем информацией о товарах
             if with_product_info and reviews:
                 reviews = self._enrich_reviews_with_product_info(reviews)
 
@@ -167,7 +163,6 @@ class OzonService:
             Обогащенные отзывы
         """
         try:
-            # Собираем артикулы товаров из отзывов
             product_ids = []
             sku_to_review_idx = {}
 
@@ -179,7 +174,6 @@ class OzonService:
                     product_ids.append(str(product_id))
                     sku_to_review_idx[str(product_id)] = idx
                 elif sku:
-                    # Если есть SKU, но нет product_id, пробуем получить product_id
                     product_info = self.get_product_info_by_sku(sku)
                     if product_info and "id" in product_info:
                         product_ids.append(str(product_info["id"]))
@@ -189,15 +183,12 @@ class OzonService:
             if not product_ids:
                 return reviews
 
-            # Получаем информацию о товарах
             products_info = self.get_products_info(product_ids)
 
-            # Обогащаем отзывы информацией о товарах
             for product_id, product_info in products_info.items():
                 if product_id in sku_to_review_idx:
                     idx = sku_to_review_idx[product_id]
 
-                    # Добавляем информацию о товаре в отзыв
                     reviews[idx]["product_info"] = {
                         "name": product_info.get("name", ""),
                         "offer_id": product_info.get("offer_id", ""),
@@ -210,7 +201,6 @@ class OzonService:
                         "vat": product_info.get("vat", "")
                     }
 
-                    # Извлекаем характеристики из атрибутов
                     characteristics = {}
                     for attr in product_info.get("attributes", []):
                         if attr.get("attribute_id") and attr.get("values"):
@@ -239,7 +229,6 @@ class OzonService:
             if not product_ids:
                 return {}
 
-            # Ozon ограничивает 1000 товаров за запрос
             batch_size = 1000
             all_products = {}
 
@@ -317,7 +306,6 @@ class OzonService:
             Отзывы без ответов
         """
         try:
-            # Получаем все опубликованные отзывы
             all_reviews = self.get_reviews(
                 status="published",
                 limit=limit,
@@ -331,13 +319,10 @@ class OzonService:
 
             reviews = all_reviews["data"]["reviews"]
 
-            # Фильтруем отзывы без ответов
             unanswered_reviews = []
             for review in reviews:
-                # Проверяем есть ли ответ
                 has_answer = bool(review.get("company_answer") or review.get("company_answer_text"))
 
-                # Проверяем дату (если days_back указан)
                 if days_back:
                     review_date_str = review.get("created_at")
                     if review_date_str:
@@ -394,7 +379,7 @@ class OzonService:
             if not text or len(text.strip()) < 1:
                 raise OzonAPIError("Текст ответа не может быть пустым")
 
-            if len(text) > 10000:  # Ozon ограничение
+            if len(text) > 10000:
                 text = text[:10000]
 
             data = {
@@ -407,7 +392,6 @@ class OzonService:
 
             response = self._make_request("POST", "/v1/review/comment/create", data)
 
-            # Проверяем успешность
             if response.get("result", {}).get("status") == "success":
                 return {
                     "success": True,
@@ -504,7 +488,6 @@ class OzonService:
             Результат теста
         """
         try:
-            # Пробуем получить список методов API
             data = {
                 "limit": 1,
                 "offset": 0
@@ -547,7 +530,6 @@ class OzonService:
             }
 
 
-# Фабрика для создания экземпляров сервиса
 class OzonServiceFactory:
     """
     Фабрика для создания экземпляров OzonService

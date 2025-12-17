@@ -72,7 +72,6 @@ class OzonGetReviewsView(APIView):
         try:
             service = OzonServiceFactory.create_service(api_key, client_id)
 
-            # Определяем какой метод вызывать
             unanswered_only = request.data.get('unanswered_only', False)
 
             if unanswered_only:

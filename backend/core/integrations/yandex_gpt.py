@@ -21,7 +21,6 @@ class YandexGPT:
     """
 
     def __init__(self):
-        # Получаем настройки
         self.api_key = self._get_setting('YANDEX_GPT_API_KEY')
         self.folder_id = self._get_setting('YANDEX_GPT_FOLDER_ID', 'b1gdhgonqqt76p6nk3cd')
         self.model_name = self._get_setting('YANDEX_GPT_MODEL_NAME', 'yandexgpt/latest')
@@ -34,7 +33,6 @@ class YandexGPT:
         else:
             self.mock_mode = False
             try:
-                # Инициализируем OpenAI клиент для Yandex
                 self.client = openai.OpenAI(
                     api_key=self.api_key,
                     base_url="https://llm.api.cloud.yandex.net/v1",
@@ -70,12 +68,10 @@ class YandexGPT:
         Returns:
             Результат анализа
         """
-        # Если mock режим или нет клиента
         if self.mock_mode or not self.client:
             return self._mock_analysis(review_data)
 
         try:
-            # Формируем промпты
             user_prompt = create_user_prompt(
                 review_text=review_data.get('review_text', ''),
                 product_model=review_data.get('product_model'),
@@ -84,7 +80,6 @@ class YandexGPT:
 
             print(f"[DEBUG] Отправка запроса в Yandex GPT...")
 
-            # Отправляем запрос через OpenAI-совместимый API
             response = self.client.chat.completions.create(
                 model=f"gpt://{self.folder_id}/{self.model_name}",
                 messages=[
@@ -96,23 +91,18 @@ class YandexGPT:
                 stream=False
             )
 
-            # Получаем ответ
             response_text = response.choices[0].message.content.strip()
             print(f"[DEBUG] Получен ответ ({len(response_text)} chars)")
 
-            # Пробуем распарсить JSON
             try:
                 analysis_data = json.loads(response_text)
             except json.JSONDecodeError:
-                # Пробуем найти JSON в тексте
                 json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
                 if json_match:
                     analysis_data = json.loads(json_match.group())
                 else:
-                    # Если не JSON, создаем структурированный ответ из текста
                     analysis_data = self._create_structured_from_text(response_text, review_data)
 
-            # Валидируем и дополняем базовые поля
             validated_data = self._validate_analysis_structure(analysis_data, review_data)
 
             return {
@@ -215,7 +205,6 @@ class YandexGPT:
             }
         }
 
-        # Рекурсивное обновление
         def deep_update(target, source):
             for key, value in source.items():
                 if key in target:
@@ -226,7 +215,6 @@ class YandexGPT:
 
         deep_update(validated, analysis_data)
 
-        # Гарантируем наличие текста ответа
         if not validated["generated_response"]["response_text"]:
             product_name = validated["review_data"]["product_model"] or "товаре"
             validated["generated_response"]["response_text"] = (
@@ -243,7 +231,6 @@ class YandexGPT:
         product = review_data.get('product_model')
         review_text = review_data.get('review_text', '')
 
-        # Определяем тон на основе оценки
         if rating >= 4:
             sentiment = "Позитивный"
             emotion = "Доволен"
@@ -263,7 +250,6 @@ class YandexGPT:
             purpose = "Поблагодарить"
             score = 0.1
 
-        # Определяем проблемы
         issues = []
         if rating < 4:
             issues = [
@@ -373,14 +359,13 @@ class YandexGPT:
             }
 
 
-# Создаем экземпляр сервиса
 try:
     yandex_gpt = YandexGPT()
     print("[SUCCESS] YandexGPT сервис инициализирован")
 except Exception as e:
     print(f"[ERROR] Не удалось инициализировать YandexGPT: {str(e)}")
 
-    # Fallback на mock
+
     class MockYandexGPT:
         def analyze_review(self, data):
             return self._mock_analysis(data)
@@ -393,7 +378,6 @@ except Exception as e:
             }
 
         def _mock_analysis(self, review_data):
-            # Та же mock логика что выше
             rating = review_data.get('original_rating', 3)
             product = review_data.get('product_model')
 
@@ -439,5 +423,6 @@ except Exception as e:
                     "mock_mode": True
                 }
             }
+
 
     yandex_gpt = MockYandexGPT()

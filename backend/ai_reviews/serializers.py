@@ -5,18 +5,15 @@ from .models import ReviewAnalysis, OzonReview
 class ReviewAnalysisSerializer(serializers.ModelSerializer):
     """Детальный сериализатор для анализа отзыва"""
 
-    # Добавляем поля для удобства
     review_id = serializers.IntegerField(source='review.review_id', read_only=True)
     review_text = serializers.CharField(source='review.text', read_only=True)
     review_rating = serializers.IntegerField(source='review.rating', read_only=True)
 
-    # Поля из analysis_data для удобного доступа
     generated_response = serializers.SerializerMethodField()
     sentiment = serializers.SerializerMethodField()
     issues_count = serializers.SerializerMethodField()
     response_preview = serializers.SerializerMethodField()
 
-    # Полный анализ
     detailed_analysis = serializers.SerializerMethodField()
 
     class Meta:
@@ -66,6 +63,7 @@ class ReviewAnalysisSerializer(serializers.ModelSerializer):
             'analysis': analysis_data.get('analysis', {}),
             'meta': analysis_data.get('meta', {})
         }
+
 
 class OzonReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов Ozon"""

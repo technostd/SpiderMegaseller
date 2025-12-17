@@ -20,7 +20,7 @@ router = DefaultRouter()
 router.register(r'reviews', OzonReviewViewSet, basename='ozon-review')
 
 urlpatterns = [
-    # Yandex GPT endpoints
+
     path('test/', TestConnectionView.as_view(), name='test-connection'),
     path('direct-test/', DirectApiTestView.as_view(), name='direct-api-test'),
     path('analyze/', AnalyzeReviewView.as_view(), name='analyze-review'),
@@ -28,7 +28,6 @@ urlpatterns = [
     path('history/', AnalysisHistoryView.as_view(), name='analysis-history'),
     path('history/<int:analysis_id>/', AnalysisDetailView.as_view(), name='analysis-detail'),
 
-    # Ozon endpoints
     path('ozon/test/', OzonTestConnectionView.as_view(), name='ozon-test'),
     path('ozon/reviews/', OzonGetReviewsView.as_view(), name='ozon-reviews'),
     path('ozon/comment/', OzonCommentReviewView.as_view(), name='ozon-comment'),
@@ -36,5 +35,4 @@ urlpatterns = [
 
     path('process-ozon/', ProcessOzonReviewsView.as_view(), name='process-ozon'),
     path('', include(router.urls)),
-    ]
-
+]

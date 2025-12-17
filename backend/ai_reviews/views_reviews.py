@@ -33,7 +33,7 @@ class OzonReviewViewSet(viewsets.ModelViewSet):
         return OzonReview.objects.filter(user=self.request.user)
 
     @action(detail=True, methods=['post'])
-    def send_answer(self, request, pk=None):
+    def send_answer(self, request):
         """Отправить ответ на отзыв через Ozon API"""
         review = self.get_object()
 
@@ -44,13 +44,11 @@ class OzonReviewViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Используем существующий сервис
         from .services import OzonReviewProcessingService
 
         try:
             processor = OzonReviewProcessingService(request.user)
 
-            # Отправляем ответ
             ozon_resp = processor.ozon_service.comment_review(
                 review_id=review.review_id,
                 text=answer_text,
@@ -107,9 +105,8 @@ class OzonReviewViewSet(viewsets.ModelViewSet):
     def analyses(self, request, pk=None):
         """Получить все анализы для отзыва"""
         review = self.get_object()
-        analyses = review.analyses.all()  # Используем related_name='analyses'
+        analyses = review.analyses.all()
 
-        # Используем существующий сериализатор или создадим новый
         from .serializers import ReviewAnalysisSerializer
         serializer = ReviewAnalysisSerializer(analyses, many=True)
 

@@ -75,7 +75,8 @@ TEMPLATES = [{
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql' if os.getenv('USE_POSTGRES', 'False') == 'True' else 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql' if os.getenv('USE_POSTGRES',
+                                                               'False') == 'True' else 'django.db.backends.sqlite3',
         'NAME': os.getenv('DB_NAME', os.path.join(BASE_DIR, 'db.sqlite3')),
         'USER': os.getenv('DB_USER', ''),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
@@ -96,22 +97,20 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 
-    # 🔑 Критично для httpOnly cookies:
     'AUTH_COOKIE': 'spider_auth',
     'AUTH_COOKIE_REFRESH': 'spider_refresh',
-    'AUTH_COOKIE_SECURE': False,      # True только в HTTPS
-    'AUTH_COOKIE_HTTP_ONLY': True,    # ← да, httpOnly
-    'AUTH_COOKIE_SAMESITE': 'Lax',    # ← попробуй 'Lax' вместо 'Strict' (Chrome иногда блокирует 'Strict')
+    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SAMESITE': 'Lax',
     'AUTH_COOKIE_PATH': '/',
 
-    'AUTH_HEADER_TYPES': ('Bearer',),  # ← оставить, но...
+    'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',)
 }
 
@@ -120,12 +119,10 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'spider_auth',
     'JWT_AUTH_REFRESH_COOKIE': 'spider_refresh',
     'JWT_AUTH_HTTPONLY': True,
-    'JWT_AUTH_SAMESITE': 'Lax',  # ← тоже 'Lax'
+    'JWT_AUTH_SAMESITE': 'Lax',
 
 }
 
-
-# 🔐 Ключ шифрования (обязательно задавать в .env в проде!)
 FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', 'u7i8o9p0a1s2d3f4g5h6j7k8l9z0x1c2')
 
 STATIC_URL = '/static/'
@@ -134,7 +131,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
 
 YANDEX_GPT_API_KEY = os.getenv('YANDEX_GPT_API_KEY')
 YANDEX_GPT_FOLDER_ID = os.getenv('YANDEX_GPT_FOLDER_ID')

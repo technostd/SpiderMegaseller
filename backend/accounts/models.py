@@ -5,7 +5,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django_cryptography.fields import encrypt
 import jsonschema
-from typing import Dict, Any, Optional
 
 class ModuleConfigSchema:
     """
@@ -31,14 +30,6 @@ class ModuleConfigSchema:
             "required": [],
             "additionalProperties": False
         },
-        # Пример расширения:
-        # 'price_optimizer': {
-        #     "type": "object",
-        #     "properties": {
-        #         "enabled": {"type": "boolean"},
-        #         "max_discount_percent": {"type": "number", "minimum": 0, "maximum": 50}
-        #     }
-        # }
     }
 
     @classmethod
@@ -72,7 +63,6 @@ class ModuleConfigSchema:
                 'default_tone': config.get('default_tone', 'нейтральный'),
                 'max_response_length': int(config.get('max_response_length', 1000)),
             }
-        # По умолчанию — как есть
         return config.copy()
 
 
@@ -140,7 +130,7 @@ User = get_user_model()
 class UserModuleConfig(models.Model):
     """
     Пользовательские настройки модулей.
-    Примеры:
+    Пример:
       - module_name = 'ai_reviews'
         config_data = {
           "premoderate": true,
@@ -148,8 +138,6 @@ class UserModuleConfig(models.Model):
           "default_tone": "нейтральный",
           "max_response_length": 500
         }
-      - module_name = 'price_optimizer'
-        config_data = { "enabled": true, "max_discount": 15 }
     """
     user = models.ForeignKey(
         User,
@@ -195,7 +183,6 @@ class UserModuleConfig(models.Model):
                 ModuleConfigSchema.validate(module_name, raw_config)
                 return ModuleConfigSchema.normalize(module_name, raw_config)
             except ValueError:
-                # Если в БД оказался невалидный конфиг — возвращаем нормализованный fallback
                 return ModuleConfigSchema.normalize(module_name, default)
         except cls.DoesNotExist:
             return ModuleConfigSchema.normalize(module_name, default)
@@ -205,11 +192,9 @@ class UserModuleConfig(models.Model):
         """
         Сохраняет конфиг после валидации и нормализации.
         """
-        # Валидация перед сохранением
         if not ModuleConfigSchema.validate(module_name, config):
             raise ValueError("Validation skipped — should not happen")
 
-        # Нормализация (с fallback)
         normalized = ModuleConfigSchema.normalize(module_name, config)
 
         obj, created = cls.objects.update_or_create(

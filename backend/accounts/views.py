@@ -47,14 +47,12 @@ class UserModuleConfigView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Сохраняем через валидатор
             UserModuleConfig.set_config(
                 user=request.user,
                 module_name=module_name,
                 config=config
             )
 
-            # Возвращаем нормализованный результат (на случай fallback'ов)
             saved_config = UserModuleConfig.get_config(
                 user=request.user,
                 module_name=module_name
