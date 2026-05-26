@@ -44,7 +44,7 @@ class OzonReviewViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        from .services import OzonReviewProcessingService
+        from .services.ozon_review_processing_service import OzonReviewProcessingService
 
         try:
             processor = OzonReviewProcessingService(request.user)

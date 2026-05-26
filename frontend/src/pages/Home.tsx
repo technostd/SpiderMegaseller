@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import {useDefaultTitle} from "../hooks/usePageTitle.ts";
 
 export default function Home() {
-
-    useDefaultTitle();
+  useDefaultTitle();
 
   return (
     <Layout>
@@ -12,26 +11,26 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            Автоматизация работы
+            ИИ-анализ отзывов
           </h1>
           <h2 className="text-4xl md:text-5xl font-bold text-emerald-600 mb-6">
-            с маркетплейсами
+            для продавцов OZON
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Упростите управление продажами на OZON, Wildberries и Яндекс.Маркет с помощью умных модулей автоматизации
+            Автоматически анализируйте отзывы, получайте готовые ответы и улучшайте репутацию магазина на OZON с помощью искусственного интеллекта
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/lk"
               className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-emerald-600 text-white hover:bg-emerald-700 h-11 px-8 text-base"
             >
-              Начать работу
+              Войти в кабинет
             </Link>
             <a
               href="/instructions"
               className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-white hover:bg-emerald-50 h-11 px-8 text-base text-gray-700"
             >
-              Узнать больше
+              Как это работает
             </a>
           </div>
         </div>
@@ -41,7 +40,7 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
-            {/* ИИ-ассистент */}
+            {/* ИИ-анализ отзывов */}
             <div className="text-center p-6">
               <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot h-6 w-6 text-emerald-600">
@@ -53,35 +52,37 @@ export default function Home() {
                   <path d="M9 13v2"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">ИИ-ассистент</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">ИИ-анализ отзывов</h3>
               <p className="text-gray-600">
-                Автоматические ответы на отзывы с помощью искусственного интеллекта
+                Автоматическое определение тональности, выявление проблем и генерация вежливых ответов для OZON
               </p>
             </div>
 
-            {/* Быстрая интеграция */}
+            {/* Модерация и отправка */}
             <div className="text-center p-6">
               <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap h-6 w-6 text-emerald-600">
-                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square h-6 w-6 text-emerald-600">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Быстрая интеграция</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Модерация и отправка</h3>
               <p className="text-gray-600">
-                Подключите все популярные маркетплейсы за несколько минут
+                Просматривайте, редактируйте и отправляйте ответы на отзывы прямо в OZON из единого интерфейса
               </p>
             </div>
 
-            {/* Безопасность */}
+            {/* Аналитика и инсайты */}
             <div className="text-center p-6">
               <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield h-6 w-6 text-emerald-600">
-                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bar-chart h-6 w-6 text-emerald-600">
+                  <line x1="12" y1="20" x2="12" y2="10"></line>
+                  <line x1="18" y1="20" x2="18" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="16"></line>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Безопасность</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Аналитика и инсайты</h3>
               <p className="text-gray-600">
-                Все данные надёжно защищены и хранятся в зашифрованном виде
+                Получайте сводки по проблемам товаров, трендам отзывов и рекомендациям по улучшению карточек
               </p>
             </div>
           </div>

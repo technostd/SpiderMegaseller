@@ -35,7 +35,7 @@ export default function Integrations() {
         const fetchCredentials = async () => {
             setLoading(true);
             try {
-                const response = await api.get('/api/accounts/credentials/');
+                const response = await api.get('/accounts/credentials/');
                 if (response.data) {
                     const newCredentials = {
                         ozon: response.data.ozon || {client_id: '', api_key: ''},
@@ -74,7 +74,6 @@ export default function Integrations() {
         }));
     };
 
-    // Валидация полей перед отправкой
     const validateFields = (mp: string) => {
         const creds = credentials[mp as keyof typeof credentials];
 
@@ -93,7 +92,7 @@ export default function Integrations() {
     };
 
     const handleSubmit = async (mp: string) => {
-        // Валидация
+
         if (!validateFields(mp)) {
             return;
         }
@@ -101,18 +100,16 @@ export default function Integrations() {
         setSaving(mp);
 
         try {
-            await api.post('/api/accounts/credentials/', {
+            await api.post('/accounts/credentials/', {
                 marketplace: mp,
                 ...(credentials[mp as keyof typeof credentials] as any)
             });
 
-            // Показываем успешное уведомление
             showNotification(
                 `${mp.toUpperCase()} успешно ${hasSavedCredentials(mp) ? 'обновлён' : 'подключён'}`,
                 'success'
             );
 
-            // Обновляем начальные значения после успешного сохранения
             setInitialCredentials(prev => ({
                 ...prev,
                 [mp]: credentials[mp as keyof typeof credentials]
@@ -131,7 +128,6 @@ export default function Integrations() {
         }
     };
 
-    // Функция для проверки, есть ли сохранённые ключи у маркетплейса (проверяем начальные значения)
     const hasSavedCredentials = (mp: string) => {
         const initialCreds = initialCredentials[mp as keyof typeof initialCredentials];
         if (mp === 'ozon') {
@@ -142,7 +138,6 @@ export default function Integrations() {
 
     const toggleEdit = (mp: string) => {
         if (editing[mp]) {
-            // Если выходим из режима редактирования, возвращаем оригинальные значения
             setCredentials(prev => ({
                 ...prev,
                 [mp]: initialCredentials[mp as keyof typeof initialCredentials]
@@ -151,9 +146,7 @@ export default function Integrations() {
         setEditing(prev => ({...prev, [mp]: !prev[mp]}));
     };
 
-    // Функция для отмены редактирования
     const handleCancel = (mp: string) => {
-        // Возвращаем исходные значения
         setCredentials(prev => ({
             ...prev,
             [mp]: initialCredentials[mp as keyof typeof initialCredentials]
@@ -161,7 +154,6 @@ export default function Integrations() {
         setEditing(prev => ({...prev, [mp]: false}));
     };
 
-    // Описания и ссылки для каждого маркетплейса
     const marketplaceInfo = {
         ozon: {
             name: 'Ozon',
@@ -361,8 +353,8 @@ export default function Integrations() {
                 ) : (
                     <div className="space-y-8">
                         {renderMarketplaceForm('ozon')}
-                        {renderMarketplaceForm('wb')}
-                        {renderMarketplaceForm('ym')}
+                        {/*{renderMarketplaceForm('wb')}*/}
+                        {/*{renderMarketplaceForm('ym')}*/}
                     </div>
                 )}
             </div>

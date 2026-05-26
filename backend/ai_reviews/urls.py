@@ -8,6 +8,7 @@ from .views import (
     TestConnectionView,
     DirectApiTestView, ProcessOzonReviewsView, DemoAnalyzeView
 )
+from .views_analytics import OzonAnalyticsDashboardView
 from .views_ozon import (
     OzonTestConnectionView,
     OzonGetReviewsView,
@@ -32,6 +33,7 @@ urlpatterns = [
     path('ozon/reviews/', OzonGetReviewsView.as_view(), name='ozon-reviews'),
     path('ozon/comment/', OzonCommentReviewView.as_view(), name='ozon-comment'),
     path('ozon/batch-comment/', OzonBatchCommentView.as_view(), name='ozon-batch-comment'),
+    path('ozon/dashboard/', OzonAnalyticsDashboardView.as_view(), name='ozon-analytics-dashboard'),
 
     path('process-ozon/', ProcessOzonReviewsView.as_view(), name='process-ozon'),
     path('', include(router.urls)),

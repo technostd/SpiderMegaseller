@@ -336,7 +336,7 @@ class YandexGPT:
 
             return {
                 "success": True,
-                "status": "connected",
+                "status": "Подключение выполнено",
                 "response": text,
                 "model": f"gpt://{self.folder_id}/{self.model_name}",
                 "api_type": "openai_compatible",

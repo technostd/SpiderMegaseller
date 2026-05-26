@@ -147,11 +147,10 @@ export const aiReviewsApi = {
   },
 
   // Тест подключения к Ozon
-  testOzonConnection: async (apiKey: string, clientId: string) => {
-    const response = await api.post('/ai-reviews/ozon/test/', {
-      api_key: apiKey,
-      client_id: clientId
-    });
+  testOzonConnection: async () => {
+    console.log('start ozon test')
+    const response = await api.post('/ai-reviews/ozon/test/');
+    console.log('ozon: ' + response)
     return response.data;
   },
 

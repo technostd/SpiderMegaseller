@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProtectedView, UserModuleConfigView, ModuleSchemaView
+from .views import ProtectedView, UserModuleConfigView, ModuleSchemaView, CredentialsView, UserProfileView
 
 urlpatterns = [
     path('profile/', ProtectedView.as_view(), name='protected-profile'),
@@ -13,5 +13,6 @@ urlpatterns = [
         ModuleSchemaView.as_view(),
         name='module-config-schema'
     ),
-
+    path('credentials/', CredentialsView.as_view(), name='credentials'),
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
 ]

@@ -35,7 +35,7 @@ export default function App() {
                         <Route path="/modules" element={<Modules/>}/>
                         <Route path="/module/ai-reviews" element={<AiReviewsPublic/>}/>
                         <Route path="/module/ai-reviews/test" element={<AiReviewsTest/>}/>
-                        <Route path="module/:id/settings" element={<ModuleSettings/>}/>
+                        <Route path="/module/:id/settings" element={<ModuleSettings/>}/>
                         <Route path="/login" element={<Login/>}/>
 
                         <Route

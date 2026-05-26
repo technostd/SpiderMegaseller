@@ -11,16 +11,37 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-spider-megaseller-dev-key-
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ============
+ALLOWED_HOSTS = ['*']
 
 SITE_ID = 1
 
-# CORS (React на localhost:5173)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5175",
+#     "http://localhost:5174",
+#     "http://localhost:5173",
+# ]
+# CSRF_TRUSTED_ORIGINS = ["http://localhost:5174", "http://localhost:5173"]
+# CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
     "http://localhost:5174",
+    "http://localhost:5175",
+    "http://95.165.29.181:5174",
 ]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
+
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://95.165.29.181:5174",
+]
+# ================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -135,3 +156,11 @@ STATICFILES_DIRS = [
 YANDEX_GPT_API_KEY = os.getenv('YANDEX_GPT_API_KEY')
 YANDEX_GPT_FOLDER_ID = os.getenv('YANDEX_GPT_FOLDER_ID')
 YANDEX_GPT_MODEL_NAME = "yandexgpt"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "ozon-analytics-cache",
+    }
+}
+

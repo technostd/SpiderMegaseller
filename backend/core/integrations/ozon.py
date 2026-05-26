@@ -1,9 +1,13 @@
 # core/integrations/ozon.py
+import logging
+
 import requests
 import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 class OzonAPIError(Exception):
@@ -480,6 +484,7 @@ class OzonService:
         except Exception as e:
             raise OzonAPIError(f"Ошибка пакетной отправки ответов: {str(e)}")
 
+    # todo проверка наличия необходимых для работы разрешений Product read-only, Review
     def test_connection(self) -> Dict:
         """
         Тест подключения к API
@@ -488,15 +493,12 @@ class OzonService:
             Результат теста
         """
         try:
-            data = {
-                "limit": 1,
-                "offset": 0
-            }
 
-            response = self._make_request("POST", "/v1/review/list", data)
-
+            response = self._make_request("POST", "/v1/roles")
+            logger.info(response)
             return {
                 "success": True,
+                "status": 'Подключение выполнено',
                 "data": {
                     "api_key_valid": True,
                     "client_id_valid": True,
@@ -509,9 +511,10 @@ class OzonService:
             }
 
         except OzonAPIError as e:
+            logger.warning(e)
             return {
                 "success": False,
-                "error": str(e),
+                "status": 'Ozon API error: ' + str(e),
                 "data": {
                     "api_key_valid": False,
                     "client_id_valid": False,
@@ -521,7 +524,7 @@ class OzonService:
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
+                "status": 'Error: ' + str(e),
                 "data": {
                     "api_key_valid": "unknown",
                     "client_id_valid": "unknown",

@@ -101,3 +101,102 @@ class OzonReviewSerializer(serializers.ModelSerializer):
                 'created_at': latest.created_at
             }
         return None
+
+
+class PriorityMatrixItemSerializer(serializers.Serializer):
+    problem = serializers.CharField()
+    impact = serializers.ChoiceField(choices=['Высокое', 'Среднее', 'Низкое'])
+    difficulty = serializers.ChoiceField(choices=['Низкая', 'Средняя', 'Высокая'])
+
+
+class QuickWinItemSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    time = serializers.CharField()
+    effect = serializers.CharField()
+
+
+class TrendPointSerializer(serializers.Serializer):
+    date = serializers.DateField(format='%Y-%m-%d')
+    value = serializers.FloatField()
+
+
+class AIRecommendationSerializer(serializers.Serializer):
+    priority = serializers.ChoiceField(choices=['high', 'medium', 'low'])
+    title = serializers.CharField()
+    effect = serializers.CharField()
+    difficulty = serializers.CharField()
+
+
+class CardAnalysisSerializer(serializers.Serializer):
+    match_description_pct = serializers.FloatField()
+    photo_in_reviews_pct = serializers.FloatField()
+    issues = serializers.ListField(child=serializers.CharField())
+
+
+class ReturnReasonSerializer(serializers.Serializer):
+    reason = serializers.CharField()
+    pct = serializers.FloatField()
+    cost_rub = serializers.FloatField()
+
+
+class ReturnsAnalysisSerializer(serializers.Serializer):
+    reasons = ReturnReasonSerializer(many=True)
+    total_returns = serializers.IntegerField()
+    total_cost_rub = serializers.FloatField()
+
+
+class CustomerSegmentSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    rating = serializers.FloatField()
+    count = serializers.IntegerField()
+
+
+class AssortmentItemSerializer(serializers.Serializer):
+    sku = serializers.CharField()
+    name = serializers.CharField()
+    rating = serializers.FloatField()
+    reviews = serializers.IntegerField()
+    trend = serializers.CharField()
+
+
+class ResponseEffectivenessSerializer(serializers.Serializer):
+    with_answer_change_pct = serializers.FloatField()
+    without_answer_change_pct = serializers.FloatField()
+    avg_response_time_hours = serializers.FloatField()
+    ai_generated_count = serializers.IntegerField()
+    time_saved_hours = serializers.FloatField()
+
+
+class OzonAnalyticsDashboardSerializer(serializers.Serializer):
+    """Сериализатор ответа для эндпоинта /api/analytics/ozon/dashboard/"""
+    period = serializers.ChoiceField(choices=['7d', '30d', '90d'])
+
+    # Матрица приоритетов и quick wins — можно рассчитать из БД + эвристики
+    priority_matrix = PriorityMatrixItemSerializer(many=True)
+    quick_wins = QuickWinItemSerializer(many=True)
+
+    # Критические алерты — расчёт на бэкенде по частоте негатива
+    critical_alerts = serializers.ListField(child=serializers.CharField())
+
+    # Динамика — чистый ORM-запрос
+    rating_trend = TrendPointSerializer(many=True)
+    reviews_volume = TrendPointSerializer(many=True)
+
+    # AI-инсайты — здесь можно использовать кэшированный результат анализа
+    ai_summary = serializers.CharField(allow_null=True)
+    ai_recommendations = AIRecommendationSerializer(many=True)
+
+    # Анализ карточки — расчёт из product_characteristics + отзывов
+    card_analysis = CardAnalysisSerializer()
+
+    # Возвраты — если нет прямых данных, рассчитываем эвристически
+    returns_analysis = ReturnsAnalysisSerializer()
+
+    # Сегментация клиентов — заглушка или расчёт по дате первого отзыва
+    customer_segments = CustomerSegmentSerializer(many=True)
+
+    # Ассортимент — группировка по product_id/SKU
+    assortment = AssortmentItemSerializer(many=True)
+
+    # Эффективность ответов — сравнение has_answer=True/False
+    response_effectiveness = ResponseEffectivenessSerializer()

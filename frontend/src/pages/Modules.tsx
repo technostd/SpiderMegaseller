@@ -29,6 +29,7 @@ export default function Modules() {
       badgeColor: 'bg-emerald-100 text-emerald-800',
       features: ['AI-анализ тональности', 'Автоответы', 'Шаблоны ответов']
     },
+      /*
     {
       id: 2,
       title: 'Анализ остатков',
@@ -111,6 +112,7 @@ export default function Modules() {
       badgeColor: 'bg-gray-100 text-gray-800',
       features: ['Дашборды', 'Экспорт в Excel', 'Сравнительная аналитика']
     }
+    */
   ];
 
   return (
@@ -222,20 +224,20 @@ export default function Modules() {
             </div>
 
             {/* Coming Soon Notice */}
-            <div className="mt-12 text-center">
-              <div className="inline-flex items-center gap-3 rounded-lg border border-border bg-card px-6 py-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock h-5 w-5 text-muted-foreground">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <div className="text-left">
-                  <p className="font-medium">Новые модули в разработке</p>
-                  <p className="text-sm text-muted-foreground">
-                    Следите за обновлениями — скоро появятся новые инструменты для автоматизации
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/*  <div className="mt-12 text-center">*/}
+          {/*    <div className="inline-flex items-center gap-3 rounded-lg border border-border bg-card px-6 py-4">*/}
+          {/*      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock h-5 w-5 text-muted-foreground">*/}
+          {/*        <circle cx="12" cy="12" r="10"></circle>*/}
+          {/*        <polyline points="12 6 12 12 16 14"></polyline>*/}
+          {/*      </svg>*/}
+          {/*      <div className="text-left">*/}
+          {/*        <p className="font-medium">Новые модули в разработке</p>*/}
+          {/*        <p className="text-sm text-muted-foreground">*/}
+          {/*          Следите за обновлениями — скоро появятся новые инструменты для автоматизации*/}
+          {/*        </p>*/}
+          {/*      </div>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
           </div>
         </section>
 

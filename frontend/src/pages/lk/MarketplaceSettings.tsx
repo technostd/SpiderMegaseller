@@ -103,7 +103,7 @@ export default function MarketplaceSettings() {
             setLoading(true);
             try {
                 // Получаем все сохранённые ключи
-                const response = await api.get('/api/accounts/credentials/');
+                const response = await api.get('/accounts/credentials/');
                 if (response.data && response.data[marketplaceId]) {
                     const marketplaceCreds = response.data[marketplaceId];
                     setCredentials(marketplaceCreds);
@@ -150,7 +150,7 @@ export default function MarketplaceSettings() {
 
         setSaving(true);
         try {
-            await api.post('/api/accounts/credentials/', {
+            await api.post('/accounts/credentials/', {
                 marketplace: marketplaceId,
                 ...credentials
             });

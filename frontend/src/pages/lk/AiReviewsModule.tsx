@@ -138,7 +138,6 @@ export default function AiReviewsModule() {
     <DashboardLayout>
       <div className="min-h-screen bg-background">
         <main className="container mx-auto py-8 space-y-8 ">
-          {/* Заголовок как на скриншоте */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => window.history.back()}
@@ -176,9 +175,7 @@ export default function AiReviewsModule() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Левая колонка */}
             <div className="lg:col-span-2 space-y-6">
-              {/* О модуле */}
               <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="flex flex-col space-y-1.5 p-6">
                   <h2 className="text-2xl font-semibold leading-none tracking-tight text-foreground">О модуле</h2>
@@ -195,7 +192,6 @@ export default function AiReviewsModule() {
                 </div>
               </div>
 
-              {/* Готовые примеры */}
               <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-foreground mb-4">Примеры отзывов для анализа</h2>
                 <p className="text-muted-foreground mb-4">
@@ -251,7 +247,6 @@ export default function AiReviewsModule() {
                 compact={false}
               />
 
-              {/* Как это работает */}
               <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
                 <h3 className="font-semibold text-foreground mb-4">Как это работает</h3>
                 <ul className="text-muted-foreground space-y-2 text-sm">

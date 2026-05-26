@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import UserModuleConfig, ModuleConfigSchema
+from .models import UserModuleConfig, ModuleConfigSchema, MarketplaceCredentials
+from .serializers import ExtendedUserProfileSerializer
 
 User = get_user_model()
 
@@ -94,3 +95,89 @@ class ModuleSchemaView(APIView):
             'module_name': module_name,
             'schema': schema
         })
+
+class CredentialsView(APIView):
+    """
+    GET /api/accounts/credentials/ — получить все сохранённые ключи (маскированные)
+    POST /api/accounts/credentials/ — сохранить/обновить ключи для маркетплейса
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Возвращает все креды пользователя (без чувствительных данных)"""
+        creds = MarketplaceCredentials.objects.filter(user=request.user)
+        result = {}
+        for mp in ['ozon', 'wb', 'ym']:
+            cred = creds.filter(marketplace=mp).first()
+            if cred:
+                result[mp] = {
+                    'client_id': cred.client_id[:4] + '•••' if cred.client_id and len(cred.client_id) > 4 else None,
+                    'api_key': cred.api_key[:4] + '•••' if cred.api_key and len(cred.api_key) > 4 else None,
+                    'api_secret': cred.api_secret[:4] + '•••' if cred.api_secret and len(
+                        cred.api_secret) > 4 else None,
+                    'created_at': cred.created_at.isoformat(),
+                    'updated_at': cred.updated_at.isoformat(),
+                }
+            else:
+                result[mp] = None
+        return Response(result)
+
+    def post(self, request):
+        """Сохраняет или обновляет ключи для указанного маркетплейса"""
+        marketplace = request.data.get('marketplace')
+        if not marketplace or marketplace not in ['ozon', 'wb', 'ym']:
+            return Response(
+                {'error': 'marketplace must be one of: ozon, wb, ym'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cred, created = MarketplaceCredentials.objects.update_or_create(
+            user=request.user,
+            marketplace=marketplace,
+            defaults={
+                'client_id': request.data.get('client_id', ''),
+                'api_key': request.data.get('api_key', ''),
+                'api_secret': request.data.get('api_secret', ''),
+            }
+        )
+        return Response({
+            'success': True,
+            'marketplace': marketplace,
+            'created': created,
+            'message': 'Ключи успешно сохранены'
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+class UserProfileView(APIView):
+    """
+    GET /api/user/profile/
+    Возвращает расширенную информацию о профиле текущего пользователя
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = ExtendedUserProfileSerializer(user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        """
+        Обновление профиля (опционально)
+        PATCH /api/user/profile/
+        {
+            "phone": "+7 (999) 123-45-67",
+            "company_name": "Новое название"
+        }
+        """
+        user = request.user
+        profile = user.profile
+
+        phone = request.data.get('phone')
+
+        company_name = request.data.get('company_name')
+        if company_name is not None:
+            profile.company_name = company_name
+            profile.save(update_fields=['company_name'])
+
+        serializer = ExtendedUserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

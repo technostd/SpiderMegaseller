@@ -1,5 +1,3 @@
-# ai_reviews/services.py
-
 import sys
 from pathlib import Path
 
@@ -10,10 +8,10 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from accounts.models import ModuleConfigSchema
-from .models import OzonReview, ReviewAnalysis
-from backend.core.integrations.ozon import OzonServiceFactory, OzonAPIError
-from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
+from accounts.models import UserModuleConfig
+from ..models import OzonReview, ReviewAnalysis
+from core.integrations.ozon import OzonServiceFactory, OzonAPIError
+from core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -36,7 +34,7 @@ class OzonReviewProcessingService:
             client_id=cred.client_id
         )
 
-        self.config = ModuleConfigSchema.get_config(
+        self.config = UserModuleConfig.get_config(
             user=self.user,
             module_name='ai_reviews',
             default={'premoderate': False}

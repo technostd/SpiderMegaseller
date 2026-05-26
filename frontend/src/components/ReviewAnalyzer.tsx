@@ -44,7 +44,7 @@ export default function ReviewAnalyzer({
         neutral: {label: 'Нейтрально', bg: 'bg-gray-100', text: 'text-gray-800'},
         positive: {label: 'Позитив', bg: 'bg-emerald-100', text: 'text-emerald-800'},
         very_positive: {label: 'Очень позитив', bg: 'bg-green-100', text: 'text-green-800'},
-        mixed: {label: 'Смешанная', bg: 'bg-purple-100', text: 'text-purple-800'},
+        mixed: {label: 'Смешанный', bg: 'bg-purple-100', text: 'text-purple-800'},
         critical: {label: 'Критическая', bg: 'bg-rose-100', text: 'text-rose-800'},
         suggestion: {label: 'Предложение', bg: 'bg-blue-100', text: 'text-blue-800'},
         question: {label: 'Вопрос', bg: 'bg-cyan-100', text: 'text-cyan-800'},
@@ -83,16 +83,18 @@ export default function ReviewAnalyzer({
     };
 
     const getAnalysisData = () => {
-        if (!result || !result.data) return null;
+        if (!result) return null;
 
         try {
-            const analysisJson = result.data.analysis_data_json
-                ? JSON.parse(result.data.analysis_data_json)
-                : {};
+            // ✅ Правильный путь к данным анализа
+            const analysisRoot = result.analysis || result.data?.analysis || {};
+            const analysisJson = analysisRoot.analysis || {};
 
-            const issues = analysisJson.analysis?.identified_issues || [];
-            const issuesList = issues.map((issue: any) => issue.issue_description);
+            // ✅ Извлекаем проблемы
+            const issues = analysisJson.identified_issues || [];
+            const issuesList = issues.map((issue: any) => issue.issue_description || issue);
 
+            // ✅ Маппинг рекомендаций
             const recommendationMap: Record<string, string> = {
                 'monitor': 'Следить за ситуацией',
                 'investigate': 'Изучить проблему',
@@ -103,33 +105,51 @@ export default function ReviewAnalyzer({
                 'contact': 'Связаться с клиентом',
                 'update': 'Обновить информацию',
                 'fix': 'Исправить ошибку',
-                'apologize': 'Принести извинения'
+                'apologize': 'Принести извинения',
+                'Связаться с клиентом': 'Связаться с клиентом', // ✅ Добавляем русские значения
+                'Изучить проблему': 'Изучить проблему',
+                'Улучшить качество': 'Улучшить качество',
             };
 
             const suggestions = [];
-            if (analysisJson.analysis?.summary?.recommended_action) {
-                const action = analysisJson.analysis.summary.recommended_action.toLowerCase();
-                const russianAction = recommendationMap[action] || action;
+            const summary = analysisJson.summary || {};
+
+            if (summary.recommended_action) {
+                const action = summary.recommended_action;
+                const russianAction = recommendationMap[action] || recommendationMap[action.toLowerCase()] || action;
                 suggestions.push(`Рекомендуемое действие: ${russianAction}`);
             }
-            if (analysisJson.analysis?.summary?.main_problem && analysisJson.analysis.summary.main_problem.trim()) {
-                suggestions.push(`Основная проблема: ${analysisJson.analysis.summary.main_problem}`);
+            if (summary.main_problem && String(summary.main_problem).trim()) {
+                suggestions.push(`Основная проблема: ${summary.main_problem}`);
             }
-            if (analysisJson.analysis?.summary?.priority_level) {
+            if (summary.priority_level) {
                 const priorityMap: Record<string, string> = {
-                    'low': 'Низкий',
-                    'medium': 'Средний',
-                    'high': 'Высокий',
-                    'critical': 'Критический'
+                    'low': 'Низкий', 'medium': 'Средний', 'high': 'Высокий', 'critical': 'Критический',
+                    'Низкий': 'Низкий', 'Средний': 'Средний', 'Высокий': 'Высокий', 'Критический': 'Критический'
                 };
-                const priority = priorityMap[analysisJson.analysis.summary.priority_level] ||
-                    analysisJson.analysis.summary.priority_level;
+                const priority = priorityMap[summary.priority_level] || priorityMap[String(summary.priority_level).toLowerCase()] || summary.priority_level;
                 suggestions.push(`Приоритет: ${priority}`);
             }
 
+            // ✅ Определяем тональность с поддержкой русских значений
+            const sentimentRaw = result.sentiment || analysisJson.overall_sentiment?.sentiment || 'neutral';
+            const sentimentMap: Record<string, string> = {
+                'Смешанный': 'mixed', 'Смешанная': 'mixed',
+                'Очень негатив': 'very_negative', 'Негатив': 'negative',
+                'Нейтрально': 'neutral', 'Позитив': 'positive',
+                'Очень позитив': 'very_positive', 'Критическая': 'critical',
+                'Предложение': 'suggestion', 'Вопрос': 'question'
+            };
+            const sentiment = sentimentMap[sentimentRaw] || sentimentRaw.toLowerCase() || 'neutral';
+
+            // ✅ Получаем сгенерированный ответ из правильного поля
+            const generatedResponse = result.generated_response ||
+                analysisRoot.generated_response?.response_text ||
+                'Нет ответа';
+
             return {
-                generated_response: result.data.generated_response || 'Нет ответа',
-                sentiment: result.data.sentiment || 'neutral',
+                generated_response: generatedResponse,
+                sentiment: sentiment,
                 issues: issuesList,
                 issues_count: issuesList.length,
                 suggestions: suggestions.length > 0 ? suggestions : ['Рекомендации не найдены'],
@@ -138,8 +158,8 @@ export default function ReviewAnalyzer({
         } catch (error) {
             console.error("Ошибка при разборе данных анализа:", error);
             return {
-                generated_response: result.data.generated_response || 'Нет ответа',
-                sentiment: result.data.sentiment || 'neutral',
+                generated_response: result.generated_response || result.data?.generated_response || 'Нет ответа',
+                sentiment: 'neutral',
                 issues: [],
                 issues_count: 0,
                 suggestions: ['Не удалось обработать данные анализа'],

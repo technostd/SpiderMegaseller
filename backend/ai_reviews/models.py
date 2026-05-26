@@ -77,7 +77,20 @@ class ReviewAnalysis(models.Model):
         OzonReview,
         on_delete=models.CASCADE,
         related_name='analyses',
-        verbose_name='Отзыв'
+        verbose_name='Отзыв',
+        null=True,
+        blank=True,
+        help_text="Оставьте пустым для аналитики дашборда (общий отчет)"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user',
+        verbose_name='Пользователь',
+        null=True,
+        blank=True,
+        help_text="Оставьте пустым для аналитики отзыва (конкретный отчет)"
     )
 
     analysis_data = models.JSONField(

@@ -82,60 +82,60 @@ export default function Dashboard() {
             docsLink: 'https://docs.ozon.ru/api/seller/',
             route: '/lk/integrations/ozon'
         },
-        {
-            name: 'Wildberries',
-            key: 'wb',
-            connected: false,
-            lastSync: null,
-            icon: <img src={wbIcon} alt="Wildberries" className="w-6 h-6"/>,
-            color: 'text-white',
-            bgGradient: 'bg-gradient-to-br from-purple-600 to-purple-800',
-            borderColor: 'border-purple-300',
-            docsLink: 'https://openapi.wb.ru/',
-            route: '/lk/integrations/wb'
-        },
-        {
-            name: 'Яндекс.Маркет',
-            key: 'ym',
-            connected: false,
-            lastSync: null,
-            icon: <img src={ymIcon} alt="Яндекс.Маркет" className="w-6 h-6"/>,
-            color: 'text-white',
-            bgGradient: 'bg-gradient-to-br from-red-500 to-red-700',
-            borderColor: 'border-red-300',
-            docsLink: 'https://yandex.ru/dev/market/partner-api/doc/ru/',
-            route: '/lk/integrations/ym'
-        }
+        // {
+        //     name: 'Wildberries',
+        //     key: 'wb',
+        //     connected: false,
+        //     lastSync: null,
+        //     icon: <img src={wbIcon} alt="Wildberries" className="w-6 h-6"/>,
+        //     color: 'text-white',
+        //     bgGradient: 'bg-gradient-to-br from-purple-600 to-purple-800',
+        //     borderColor: 'border-purple-300',
+        //     docsLink: 'https://openapi.wb.ru/',
+        //     route: '/lk/integrations/wb'
+        // },
+        // {
+        //     name: 'Яндекс.Маркет',
+        //     key: 'ym',
+        //     connected: false,
+        //     lastSync: null,
+        //     icon: <img src={ymIcon} alt="Яндекс.Маркет" className="w-6 h-6"/>,
+        //     color: 'text-white',
+        //     bgGradient: 'bg-gradient-to-br from-red-500 to-red-700',
+        //     borderColor: 'border-red-300',
+        //     docsLink: 'https://yandex.ru/dev/market/partner-api/doc/ru/',
+        //     route: '/lk/integrations/ym'
+        // }
     ]);
 
     const [modules, setModules] = useState<ModuleStatus[]>([
         {
             id: 'ai-reviews',
-            name: 'ИИ-ответы на отзывы',
-            description: 'Автоматическая генерация и отправка ответов на отзывы',
+            name: 'ИИ-анализ отзывов',
+            description: 'Автоматическая генерация аналитики и ответов на отзывы',
             enabled: false,
             icon: <Bot className="w-5 h-5"/>,
             bgGradient: 'bg-gradient-to-br from-emerald-50 to-blue-50',
             borderColor: 'border-emerald-200'
         },
-        {
-            id: 'analytics',
-            name: 'Аналитика продаж',
-            description: 'Детальная аналитика и отчеты по продажам',
-            enabled: false,
-            icon: <BarChart3 className="w-5 h-5"/>,
-            bgGradient: 'bg-gradient-to-br from-blue-50 to-purple-50',
-            borderColor: 'border-blue-200'
-        },
-        {
-            id: 'auto-pricing',
-            name: 'Автоценообразование',
-            description: 'Автоматическая корректировка цен на товары',
-            enabled: false,
-            icon: <RefreshCw className="w-5 h-5"/>,
-            bgGradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
-            borderColor: 'border-amber-200'
-        }
+        // {
+        //     id: 'analytics',
+        //     name: 'Аналитика продаж',
+        //     description: 'Детальная аналитика и отчеты по продажам',
+        //     enabled: false,
+        //     icon: <BarChart3 className="w-5 h-5"/>,
+        //     bgGradient: 'bg-gradient-to-br from-blue-50 to-purple-50',
+        //     borderColor: 'border-blue-200'
+        // },
+        // {
+        //     id: 'auto-pricing',
+        //     name: 'Автоценообразование',
+        //     description: 'Автоматическая корректировка цен на товары',
+        //     enabled: false,
+        //     icon: <RefreshCw className="w-5 h-5"/>,
+        //     bgGradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
+        //     borderColor: 'border-amber-200'
+        // }
     ]);
 
     const [loading, setLoading] = useState(true);
@@ -151,51 +151,61 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             setLoading(true);
             try {
-                // Загружаем статус интеграций
-                const credentialsResponse = await api.get('/api/accounts/credentials/');
+                const credentialsResponse = await api.get('/accounts/credentials/');
 
-                // Загружаем статус модулей
-                const modulesResponse = await api.get('/api/modules/status/');
+                // const modulesResponse = await api.get('/modules/status/');
 
-                // Загружаем данные пользователя
-                const userResponse = await api.get('/api/user/profile/');
+                const userResponse = await api.get('/accounts/user/profile/');
                 if (userResponse.data) {
                     setUserInfo(userResponse.data);
                 }
 
-                // Обновляем статусы маркетплейсов
                 if (credentialsResponse.data) {
-                    setMarketplaces(prev => prev.map(mp => ({
-                        ...mp,
-                        connected: !!credentialsResponse.data[mp.key]?.api_key ||
-                            (mp.key === 'ozon' ? !!credentialsResponse.data[mp.key]?.client_id : false),
-                        lastSync: credentialsResponse.data[mp.key]?.last_sync || null
-                    })));
+                    const data = credentialsResponse.data;
+
+                    setMarketplaces(prev => prev.map(mp => {
+                        let isConnected = false;
+
+                        if (mp.key === 'ozon') {
+                            // Для OZON нужны ОБА ключа
+                            isConnected = !!data.ozon?.client_id && !!data.ozon?.api_key;
+                        } else if (mp.key === 'wb') {
+                            // Для WB достаточно API Key
+                            isConnected = !!data.wb?.api_key;
+                        } else if (mp.key === 'ym') {
+                            // Для Yandex Market достаточно API Key
+                            isConnected = !!data.ym?.api_key;
+                        }
+
+                        return {
+                            ...mp,
+                            connected: isConnected,
+                            lastSync: data[mp.key]?.last_sync || null
+                        };
+                    }));
                 }
 
-                // Обновляем статусы модулей
-                if (modulesResponse.data) {
-                    setModules(prev => prev.map(module => ({
-                        ...module,
-                        enabled: modulesResponse.data[module.id]?.enabled || false,
-                        stats: modulesResponse.data[module.id]?.stats || module.stats
-                    })));
-                }
+                // if (modulesResponse.data) {
+                //     setModules(prev => prev.map(module => ({
+                //         ...module,
+                //         enabled: modulesResponse.data[module.id]?.enabled || false,
+                //         stats: modulesResponse.data[module.id]?.stats || module.stats
+                //     })));
+                // }
 
-                // Обновляем общую статистику
                 const connectedCount = marketplaces.filter(mp =>
                     !!credentialsResponse.data?.[mp.key]?.api_key ||
                     (mp.key === 'ozon' ? !!credentialsResponse.data?.[mp.key]?.client_id : false)
                 ).length;
 
-                const activeModulesCount = modules.filter(m =>
-                    modulesResponse.data?.[m.id]?.enabled
-                ).length;
+                // const activeModulesCount = modules.filter(m =>
+                //     modulesResponse.data?.[m.id]?.enabled
+                // ).length;
 
                 setStats(prev => ({
                     ...prev,
                     totalMarketplaces: connectedCount,
-                    activeModules: activeModulesCount
+                    activeModules: 1
                 }));
 
             } catch (err: any) {
@@ -439,7 +449,7 @@ export default function Dashboard() {
                         <Phone className="w-4 h-4 text-gray-500"/>
                         <div>
                             <p className="text-xs text-gray-500">Телефон</p>
-                            <p className="text-sm font-medium text-gray-800">{userInfo.phone}</p>
+                            <p className="text-sm font-medium text-gray-800">{userInfo.phone ?? '–'}</p>
                         </div>
                     </div>
                 </div>
@@ -496,32 +506,32 @@ export default function Dashboard() {
                         </div>
 
                         {/* Статистика */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <StatCard
-                                title="Подключено маркетплейсов"
-                                value={stats.totalMarketplaces}
-                                icon={<Zap className="w-5 h-5 text-white"/>}
-                                color="bg-emerald-500"
-                            />
-                            <StatCard
-                                title="Активных модулей"
-                                value={stats.activeModules}
-                                icon={<Bot className="w-5 h-5 text-white"/>}
-                                color="bg-blue-500"
-                            />
-                            <StatCard
-                                title="Последняя синхронизация"
-                                value={stats.lastSync}
-                                icon={<Clock className="w-5 h-5 text-white"/>}
-                                color="bg-purple-500"
-                            />
-                            <StatCard
-                                title="Следующая синхронизация"
-                                value={stats.nextSync}
-                                icon={<RefreshCw className="w-5 h-5 text-white"/>}
-                                color="bg-amber-500"
-                            />
-                        </div>
+                        {/*<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">*/}
+                        {/*    <StatCard*/}
+                        {/*        title="Подключено маркетплейсов"*/}
+                        {/*        value={stats.totalMarketplaces}*/}
+                        {/*        icon={<Zap className="w-5 h-5 text-white"/>}*/}
+                        {/*        color="bg-emerald-500"*/}
+                        {/*    />*/}
+                        {/*    <StatCard*/}
+                        {/*        title="Активных модулей"*/}
+                        {/*        value={stats.activeModules}*/}
+                        {/*        icon={<Bot className="w-5 h-5 text-white"/>}*/}
+                        {/*        color="bg-blue-500"*/}
+                        {/*    />*/}
+                        {/*    <StatCard*/}
+                        {/*        title="Последняя синхронизация"*/}
+                        {/*        value={stats.lastSync}*/}
+                        {/*        icon={<Clock className="w-5 h-5 text-white"/>}*/}
+                        {/*        color="bg-purple-500"*/}
+                        {/*    />*/}
+                        {/*    <StatCard*/}
+                        {/*        title="Следующая синхронизация"*/}
+                        {/*        value={stats.nextSync}*/}
+                        {/*        icon={<RefreshCw className="w-5 h-5 text-white"/>}*/}
+                        {/*        color="bg-amber-500"*/}
+                        {/*    />*/}
+                        {/*</div>*/}
 
                         {/* Маркетплейсы */}
                         <div className="mb-8">

@@ -18,9 +18,9 @@ from rest_framework.views import APIView
 
 from .models import OzonReview, ReviewAnalysis
 from .serializers import ReviewAnalysisSerializer
-from .services import OzonReviewProcessingService
+from .services.ozon_review_processing_service import OzonReviewProcessingService
 
-from backend.core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
+from core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class TestConnectionView(APIView):
             try:
                 api_test = yandex_gpt.test_connection()
                 test_result.update(api_test)
-                test_result["status"] = "✅ API подключено успешно" if api_test.get("success") else \
+                test_result["status"] = "Подключение выполнено" if api_test.get("success") else \
                     f"❌ Ошибка API: {api_test.get('error')}"
             except Exception as e:
                 test_result["api_test_error"] = str(e)
