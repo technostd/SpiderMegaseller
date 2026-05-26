@@ -18,7 +18,7 @@ import {
   ChevronRight,
   AlertCircle,
   FileText,
-  Eye
+  Eye, Zap
 } from 'lucide-react';
 
 const AiReviewsModeration: React.FC = () => {
@@ -205,6 +205,13 @@ const AiReviewsModeration: React.FC = () => {
                 Просматривайте, анализируйте и утверждайте автоматически сгенерированные ответы
               </p>
             </div>
+            <Link
+                to="/lk/module/ai-reviews/quick-moderation"
+                className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            >
+              <Zap className="w-4 h-4 mr-2"/>
+              Быстрая модерация
+            </Link>
             <button
               onClick={loadReviews}
               className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"

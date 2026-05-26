@@ -4,57 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aa4c674-25c6-4ecf-a308-957844ead44c" name="Changes" comment="gitignore">
-      <change afterPath="$PROJECT_DIR$/backend/accounts/serializers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/management/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/management/commands/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/management/commands/generate_ozon_dashboard.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/services/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/services/analytics_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/services/ozon_review_processing_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/signals.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/views_analytics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/core/prompts/comprehensive_analytics_prompt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/scripts/batch_analyze_reviews.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/scripts/import_reviews_from_json.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/SpiderMegaseller.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SpiderMegaseller.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="8aa4c674-25c6-4ecf-a308-957844ead44c" name="Changes" comment="комплексная аналитика по отзывам">
+      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/migrations/0001_initial.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/migrations/0002_alter_reviewanalysis_review.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/migrations/0003_reviewanalysis_user.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/ai_reviews/migrations/0004_ozonreview_product_info.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/lk/QuickModerationPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accounts/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accounts/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/apps.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/ai_reviews/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/ai_reviews/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/services.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/views_ozon.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/views_ozon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/views_reviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/views_reviews.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/integrations/ozon.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/integrations/ozon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/integrations/yandex_gpt.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/integrations/yandex_gpt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ai_reviews/services/ozon_review_processing_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ai_reviews/services/ozon_review_processing_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/aiReviews.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/aiReviews.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/client.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/ozonAnalytics.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/ozonAnalytics.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/DashboardLayout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DashboardLayout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ReviewAnalyzer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ReviewDetailedAnalysis.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ReviewDetailedAnalysis.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Instructions.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Modules.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Modules.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsConfiguration.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsConfiguration.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModule.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Dashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/Integrations.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/MarketplaceSettings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/MarketplaceSettings.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/OzonAnalyticsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/OzonAnalyticsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/types/analytics.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/analytics.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModeration.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/lk/AiReviewsModeration.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -209,6 +170,8 @@
       <workItem from="1778572979488" duration="593000" />
       <workItem from="1778647865073" duration="21871000" />
       <workItem from="1779164652033" duration="9567000" />
+      <workItem from="1779797064402" duration="683000" />
+      <workItem from="1779798737095" duration="8809000" />
     </task>
     <task id="LOCAL-00001" summary="доработка логики авторизации">
       <option name="closed" value="true" />
@@ -250,7 +213,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778059859681</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="комплексная аналитика по отзывам">
+      <option name="closed" value="true" />
+      <created>1779797111250</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1779797111250</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -280,7 +251,8 @@
     <MESSAGE value="фронт Модуля ИИ-отзывов + исправления по бэку" />
     <MESSAGE value="backend clean-up" />
     <MESSAGE value="gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
+    <MESSAGE value="комплексная аналитика по отзывам" />
+    <option name="LAST_COMMIT_MESSAGE" value="комплексная аналитика по отзывам" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SpiderMegaseller$inject_test_reviews.coverage" NAME="inject_test_reviews Coverage Results" MODIFIED="1778665245409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/scripts" />

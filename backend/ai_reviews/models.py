@@ -30,6 +30,7 @@ class OzonReview(models.Model):
 
     product_name = models.CharField('Название товара', max_length=500, blank=True)
     product_characteristics = models.JSONField('Характеристики товара', default=dict, blank=True)
+    product_info = models.JSONField('Полная информация о товаре', default=dict, blank=True)
 
     has_answer = models.BooleanField('Есть ответ?', default=False)
     answer_text = models.TextField('Текст ответа', blank=True)

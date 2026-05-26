@@ -37,7 +37,7 @@ class OzonReviewProcessingService:
         self.config = UserModuleConfig.get_config(
             user=self.user,
             module_name='ai_reviews',
-            default={'premoderate': False}
+            default={'premoderate': True}
         )
 
     def run(self, days_back: int = 30, limit: int = 100):
@@ -203,6 +203,7 @@ class OzonReviewProcessingService:
                 created_at=ozon_review.get('created_at') or timezone.now(),
                 product_name=product_name,
                 product_characteristics=product_info.get('characteristics', {}),
+                product_info=product_info,
                 has_answer=False,
                 moderation_status='not_submitted'
             )

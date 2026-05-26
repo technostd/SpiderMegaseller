@@ -79,7 +79,7 @@ class OzonReviewSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'review_id', 'product_id', 'offer_id', 'sku',
             'text', 'short_text', 'rating', 'created_at',
-            'product_name', 'product_characteristics',
+            'product_name', 'product_characteristics', 'product_info',
             'has_answer', 'answer_text', 'answer_posted_at', 'answer_ozon_id',
             'moderation_status', 'created_local', 'updated_local',
             'user', 'analysis_count', 'latest_analysis'

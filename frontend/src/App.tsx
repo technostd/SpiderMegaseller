@@ -20,6 +20,7 @@ import AiReviewsModeration from "./pages/lk/AiReviewsModeration.tsx";
 import AiReviewsConfiguration from "./pages/lk/AiReviewsConfiguration.tsx";
 import AiReviewAnalysisPage from "./pages/lk/AiReviewAnalysis.tsx";
 import OzonAnalyticsPage from "./pages/lk/OzonAnalyticsPage.tsx";
+import QuickModerationPage from "./pages/lk/QuickModerationPage.tsx";
 
 export default function App() {
     return (
@@ -53,6 +54,7 @@ export default function App() {
                             <Route path="module/ai-reviews/moderation" element={<AiReviewsModeration/>}/>
                             <Route path="module/ai-reviews/configuration" element={<AiReviewsConfiguration/>}/>
                             <Route path="module/ai-reviews/ozon-analytics" element={<OzonAnalyticsPage/>}/>
+                            <Route path="module/ai-reviews/quick-moderation" element={<QuickModerationPage/>}/>
                             <Route path="module/ai-reviews/analysis/:reviewId" element={<AiReviewAnalysisPage/>}/>
                             <Route path="module/ai-reviews/analysis/:reviewId/:analysisId" element={<AiReviewAnalysisPage/>}/>
                         </Route>
