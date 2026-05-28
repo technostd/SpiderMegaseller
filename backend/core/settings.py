@@ -11,24 +11,17 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-spider-megaseller-dev-key-
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-# ============
 ALLOWED_HOSTS = ['*']
 
 SITE_ID = 1
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5175",
-#     "http://localhost:5174",
-#     "http://localhost:5173",
-# ]
-# CSRF_TRUSTED_ORIGINS = ["http://localhost:5174", "http://localhost:5173"]
-# CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:5175",
+    "http://127.0.0.1:5175",
     "http://95.165.29.181:5174",
 ]
 
@@ -37,11 +30,13 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:5175",
+    "http://127.0.0.1:5175",
     "http://95.165.29.181:5174",
 ]
-# ================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -63,7 +58,6 @@ INSTALLED_APPS = [
 
     'accounts',
     'ai_reviews',
-
 ]
 
 MIDDLEWARE = [
@@ -82,22 +76,21 @@ ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [],
+    'DIRS': [os.path.join(BASE_DIR, "templates")],
     'APP_DIRS': True,
     'OPTIONS': {
         'context_processors': [
             'django.template.context_processors.debug',
             'django.template.context_processors.request',
             'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',  # ✅ добавлено
+            'django.contrib.messages.context_processors.messages',
         ],
     },
 }]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql' if os.getenv('USE_POSTGRES',
-                                                               'False') == 'True' else 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql' if os.getenv('USE_POSTGRES', 'False') == 'True' else 'django.db.backends.sqlite3',
         'NAME': os.getenv('DB_NAME', os.path.join(BASE_DIR, 'db.sqlite3')),
         'USER': os.getenv('DB_USER', ''),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
@@ -141,7 +134,6 @@ REST_AUTH = {
     'JWT_AUTH_REFRESH_COOKIE': 'spider_refresh',
     'JWT_AUTH_HTTPONLY': True,
     'JWT_AUTH_SAMESITE': 'Lax',
-
 }
 
 FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', 'u7i8o9p0a1s2d3f4g5h6j7k8l9z0x1c2')
@@ -164,3 +156,29 @@ CACHES = {
     }
 }
 
+# EMAIL CONFIGURATION — Yandex Cloud Postbox
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "postbox.cloud.yandex.net"
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+
+EMAIL_HOST_USER = os.getenv("POSTBOX_LOGIN")
+EMAIL_HOST_PASSWORD = os.getenv("POSTBOX_PASSWORD")
+
+POSTBOX_FROM_EMAIL = os.getenv("POSTBOX_FROM_EMAIL")
+
+DEFAULT_FROM_EMAIL = f"Spider Megaseller <{POSTBOX_FROM_EMAIL}>"
+SERVER_EMAIL = f"System <{POSTBOX_FROM_EMAIL}>"
+
+# CELERY
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Europe/Moscow"
+
+# Для локальной разработки: .delay() выполняется сразу без отдельного worker
+CELERY_TASK_ALWAYS_EAGER = True

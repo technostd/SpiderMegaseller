@@ -1,0 +1,57 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Отчёт обработки отзывов{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0; color:#059669; font-size:24px;">
+    ✅ Обработка отзывов завершена
+  </h1>
+
+  <p style="font-size:16px; color:#111827;">
+    Здравствуйте!
+  </p>
+
+  <p style="font-size:16px; color:#374151; line-height:1.5;">
+    Пакетная обработка отзывов Ozon завершена.
+  </p>
+
+  <div style="display:block; margin:20px 0;">
+    <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:16px; margin-bottom:12px;">
+      <p style="margin:0; color:#065f46; font-size:15px;">
+        Всего отзывов:
+      </p>
+      <p style="margin:4px 0 0 0; color:#064e3b; font-size:28px; font-weight:bold;">
+        {{ total_count }}
+      </p>
+    </div>
+
+    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px; margin-bottom:12px;">
+      <p style="margin:0; color:#1e40af; font-size:15px;">
+        Успешно обработано:
+      </p>
+      <p style="margin:4px 0 0 0; color:#1e3a8a; font-size:28px; font-weight:bold;">
+        {{ success_count }}
+      </p>
+    </div>
+
+    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:16px;">
+      <p style="margin:0; color:#991b1b; font-size:15px;">
+        Ошибки:
+      </p>
+      <p style="margin:4px 0 0 0; color:#7f1d1d; font-size:28px; font-weight:bold;">
+        {{ failed_count }}
+      </p>
+    </div>
+  </div>
+
+  <p style="font-size:16px; color:#374151; line-height:1.5;">
+    Вы можете открыть дашборд и посмотреть результаты анализа.
+  </p>
+
+  <p style="margin-top:24px;">
+    <a href="{{ dashboard_url }}"
+       style="display:inline-block; background:#10b981; color:#ffffff; padding:12px 18px; border-radius:10px; text-decoration:none; font-weight:bold;">
+      Открыть дашборд
+    </a>
+  </p>
+{% endblock %}

@@ -1,12 +1,23 @@
 from django.contrib.auth import get_user_model
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import UserModuleConfig, ModuleConfigSchema, MarketplaceCredentials
-from .serializers import ExtendedUserProfileSerializer
+
+from .models import (
+    UserModuleConfig,
+    ModuleConfigSchema,
+    MarketplaceCredentials,
+    UserEmailPreferences,
+)
+from .serializers import (
+    ExtendedUserProfileSerializer,
+    UserEmailPreferencesSerializer,
+)
 
 User = get_user_model()
+
 
 class ProtectedView(APIView):
     permission_classes = [IsAuthenticated]
@@ -17,6 +28,7 @@ class ProtectedView(APIView):
             "user": request.user.email,
             "company": getattr(request.user.profile, 'company_name', None)
         })
+
 
 class UserModuleConfigView(APIView):
     """
@@ -80,7 +92,7 @@ class UserModuleConfigView(APIView):
 class ModuleSchemaView(APIView):
     """
     GET /api/accounts/module-config/schema/<module_name>/
-    Получить JSON Schema для модуля (для UI-валидации или docs)
+    Получить JSON Schema для модуля
     """
     permission_classes = [IsAuthenticated]
 
@@ -96,35 +108,46 @@ class ModuleSchemaView(APIView):
             'schema': schema
         })
 
+
 class CredentialsView(APIView):
     """
-    GET /api/accounts/credentials/ — получить все сохранённые ключи (маскированные)
+    GET /api/accounts/credentials/ — получить все сохранённые ключи
     POST /api/accounts/credentials/ — сохранить/обновить ключи для маркетплейса
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Возвращает все креды пользователя (без чувствительных данных)"""
         creds = MarketplaceCredentials.objects.filter(user=request.user)
         result = {}
+
         for mp in ['ozon', 'wb', 'ym']:
             cred = creds.filter(marketplace=mp).first()
+
             if cred:
                 result[mp] = {
-                    'client_id': cred.client_id[:4] + '•••' if cred.client_id and len(cred.client_id) > 4 else None,
-                    'api_key': cred.api_key[:4] + '•••' if cred.api_key and len(cred.api_key) > 4 else None,
-                    'api_secret': cred.api_secret[:4] + '•••' if cred.api_secret and len(
-                        cred.api_secret) > 4 else None,
+                    'client_id': cred.client_id[:4] + '•••'
+                    if cred.client_id and len(cred.client_id) > 4
+                    else None,
+
+                    'api_key': cred.api_key[:4] + '•••'
+                    if cred.api_key and len(cred.api_key) > 4
+                    else None,
+
+                    'api_secret': cred.api_secret[:4] + '•••'
+                    if cred.api_secret and len(cred.api_secret) > 4
+                    else None,
+
                     'created_at': cred.created_at.isoformat(),
                     'updated_at': cred.updated_at.isoformat(),
                 }
             else:
                 result[mp] = None
+
         return Response(result)
 
     def post(self, request):
-        """Сохраняет или обновляет ключи для указанного маркетплейса"""
         marketplace = request.data.get('marketplace')
+
         if not marketplace or marketplace not in ['ozon', 'wb', 'ym']:
             return Response(
                 {'error': 'marketplace must be one of: ozon, wb, ym'},
@@ -140,6 +163,7 @@ class CredentialsView(APIView):
                 'api_secret': request.data.get('api_secret', ''),
             }
         )
+
         return Response({
             'success': True,
             'marketplace': marketplace,
@@ -161,23 +185,51 @@ class UserProfileView(APIView):
         return Response(serializer.data)
 
     def patch(self, request):
-        """
-        Обновление профиля (опционально)
-        PATCH /api/user/profile/
-        {
-            "phone": "+7 (999) 123-45-67",
-            "company_name": "Новое название"
-        }
-        """
         user = request.user
         profile = user.profile
 
         phone = request.data.get('phone')
-
         company_name = request.data.get('company_name')
+
+        if phone is not None:
+            profile.phone = phone
+
         if company_name is not None:
             profile.company_name = company_name
-            profile.save(update_fields=['company_name'])
+
+        profile.save()
 
         serializer = ExtendedUserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserEmailPreferencesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        preferences, _ = UserEmailPreferences.objects.get_or_create(
+            user=request.user
+        )
+
+        serializer = UserEmailPreferencesSerializer(preferences)
+
+        return Response(serializer.data)
+
+    def put(self, request):
+        preferences, _ = UserEmailPreferences.objects.get_or_create(
+            user=request.user
+        )
+
+        serializer = UserEmailPreferencesSerializer(
+            preferences,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    def patch(self, request):
+        return self.put(request)

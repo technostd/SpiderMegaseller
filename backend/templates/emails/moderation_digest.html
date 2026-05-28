@@ -1,0 +1,66 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Новые ответы на модерации{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0; color:#059669; font-size:24px;">
+    📝 Новые ответы ждут модерации
+  </h1>
+
+  <p style="font-size:16px; color:#111827;">
+    Здравствуйте!
+  </p>
+
+  <p style="font-size:16px; color:#374151; line-height:1.5;">
+    В модуле AI-отзывов появились ответы, которые нужно проверить перед публикацией.
+  </p>
+
+  <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:16px; margin:20px 0;">
+    <p style="margin:0; color:#065f46; font-size:15px;">
+      Количество ответов на модерации:
+    </p>
+    <p style="margin:4px 0 0 0; color:#064e3b; font-size:28px; font-weight:bold;">
+      {{ pending_count }}
+    </p>
+  </div>
+
+  {% if reviews %}
+    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb; color:#374151;">
+            Товар
+          </th>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb; color:#374151;">
+            Рейтинг
+          </th>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb; color:#374151;">
+            Ответ
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for review in reviews %}
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #e5e7eb; color:#111827;">
+              {{ review.product_name }}
+            </td>
+            <td style="padding:10px; border-bottom:1px solid #e5e7eb; color:#111827;">
+              {{ review.rating }} ★
+            </td>
+            <td style="padding:10px; border-bottom:1px solid #e5e7eb; color:#374151;">
+              {{ review.response_preview }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <p style="margin-top:24px;">
+    <a href="{{ moderation_url }}"
+       style="display:inline-block; background:#10b981; color:#ffffff; padding:12px 18px; border-radius:10px; text-decoration:none; font-weight:bold;">
+      Перейти к модерации
+    </a>
+  </p>
+{% endblock %}

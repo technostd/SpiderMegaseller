@@ -1,0 +1,38 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Ошибка интеграции{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0; color:#dc2626; font-size:24px;">
+    ⚠️ Ошибка интеграции
+  </h1>
+
+  <p style="font-size:16px; color:#111827;">
+    Здравствуйте!
+  </p>
+
+  <p style="font-size:16px; color:#374151; line-height:1.5;">
+    В системе Spider Megaseller обнаружена проблема с интеграцией.
+  </p>
+
+  <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:16px; margin:20px 0;">
+    <p style="margin:0 0 8px 0; color:#991b1b; font-weight:bold;">
+      {{ error_title }}
+    </p>
+
+    <p style="margin:0; color:#7f1d1d; line-height:1.5;">
+      {{ error_message }}
+    </p>
+  </div>
+
+  <p style="font-size:16px; color:#374151; line-height:1.5;">
+    Рекомендуем проверить настройки подключения в личном кабинете.
+  </p>
+
+  <p style="margin-top:24px;">
+    <a href="{{ dashboard_url }}"
+       style="display:inline-block; background:#10b981; color:#ffffff; padding:12px 18px; border-radius:10px; text-decoration:none; font-weight:bold;">
+      Перейти к интеграциям
+    </a>
+  </p>
+{% endblock %}

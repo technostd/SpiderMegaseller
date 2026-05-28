@@ -203,3 +203,61 @@ class UserModuleConfig(models.Model):
             defaults={'config_data': normalized}
         )
         return obj
+    
+class UserEmailPreferences(models.Model):
+    DIGEST_IMMEDIATE = "immediate"
+    DIGEST_HOURLY = "hourly"
+    DIGEST_DAILY = "daily"
+
+    DIGEST_CHOICES = [
+        (DIGEST_IMMEDIATE, "Мгновенно"),
+        (DIGEST_HOURLY, "Раз в час"),
+        (DIGEST_DAILY, "Раз в сутки"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="email_prefs",
+    )
+
+    is_active = models.BooleanField(
+        "Активировать email-уведомления",
+        default=True,
+    )
+
+    notify_integration_errors = models.BooleanField(
+        "Ошибки интеграций",
+        default=True,
+    )
+
+    notify_moderation_queue = models.BooleanField(
+        "Новые ответы на модерации",
+        default=True,
+    )
+
+    moderation_digest_interval = models.CharField(
+        "Частота дайджеста модерации",
+        max_length=20,
+        choices=DIGEST_CHOICES,
+        default=DIGEST_HOURLY,
+    )
+
+    notify_processing_report = models.BooleanField(
+        "Отчёты обработки отзывов",
+        default=True,
+    )
+
+    notify_security = models.BooleanField(
+        "Безопасность аккаунта",
+        default=True,
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Настройки email-уведомлений"
+        verbose_name_plural = "Настройки email-уведомлений"
+
+    def __str__(self):
+        return f"Email-настройки пользователя {self.user_id}"
