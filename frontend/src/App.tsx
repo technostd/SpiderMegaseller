@@ -1,3 +1,5 @@
+import EmailNotificationsSettings from "./pages/lk/EmailNotificationsSettings.tsx";
+
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import {AuthProvider} from "./contexts/AuthProvider";
 
@@ -38,6 +40,7 @@ export default function App() {
                         <Route path="/module/ai-reviews/test" element={<AiReviewsTest/>}/>
                         <Route path="/module/:id/settings" element={<ModuleSettings/>}/>
                         <Route path="/login" element={<Login/>}/>
+                        <Route path="settings/email" element={<EmailNotificationsSettings/>}/>
 
                         <Route
                             path="/lk/*"
@@ -57,6 +60,9 @@ export default function App() {
                             <Route path="module/ai-reviews/quick-moderation" element={<QuickModerationPage/>}/>
                             <Route path="module/ai-reviews/analysis/:reviewId" element={<AiReviewAnalysisPage/>}/>
                             <Route path="module/ai-reviews/analysis/:reviewId/:analysisId" element={<AiReviewAnalysisPage/>}/>
+                            <Route path="integrations" element={<Integrations/>}/>
+                            <Route path="settings/email" element={<EmailNotificationsSettings/>}/>
+                            <Route path="modules" element={<Dashboard/>}/>
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
