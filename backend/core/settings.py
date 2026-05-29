@@ -182,3 +182,8 @@ CELERY_TIMEZONE = "Europe/Moscow"
 
 # Для локальной разработки: .delay() выполняется сразу без отдельного worker
 CELERY_TASK_ALWAYS_EAGER = True
+
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5174")
+
+EMAIL_REPLY_TO = os.getenv("EMAIL_REPLY_TO", POSTBOX_FROM_EMAIL)
+EMAIL_UNSUBSCRIBE_EMAIL = os.getenv("EMAIL_UNSUBSCRIBE_EMAIL", POSTBOX_FROM_EMAIL)

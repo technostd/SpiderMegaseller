@@ -53,13 +53,22 @@ class EmailService:
 
         text_content = strip_tags(html_content)
 
+        unsubscribe_url = f"{settings.FRONTEND_BASE_URL}/lk/settings/email"
+
         message = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[user.email],
+            reply_to=[settings.EMAIL_REPLY_TO],
+            headers={
+                "List-Unsubscribe": (
+                    f"<mailto:{settings.EMAIL_UNSUBSCRIBE_EMAIL}>, "
+                    f"<{unsubscribe_url}>"
+                ),
+                "X-Auto-Response-Suppress": "All",
+            },
         )
-
         message.attach_alternative(html_content, "text/html")
 
         try:
