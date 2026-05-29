@@ -12,7 +12,7 @@ from accounts.models import UserModuleConfig
 from ..models import OzonReview, ReviewAnalysis
 from core.integrations.ozon import OzonServiceFactory, OzonAPIError
 from core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
-from core.tasks import send_transactional_email
+from core.tasks import send_transactional_email, send_moderation_digest_email
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -97,12 +97,15 @@ class OzonReviewProcessingService:
 
                         if premoderate:
                             review_obj.moderation_status = 'pending'
-                            review_obj.save(update_fields=['moderation_status'])
+                            review_obj.answer_text = response_text
+                            review_obj.save(update_fields=['moderation_status', 'answer_text'])
 
                             results.append({
                                 'review_id': review_id,
                                 'status': 'pending_moderation',
                                 'analysis_id': analysis.id,
+                                'product_name': review_obj.product_name or 'Товар без названия',
+                                'rating': review_obj.rating or 0,
                                 'response_preview': response_text[:80] + '...'
                             })
                             continue
@@ -150,7 +153,17 @@ class OzonReviewProcessingService:
                         'status': 'processing_error',
                         'error': str(e)
                     })
+            pending_reviews = [
+                item for item in results
+                if item.get('status') == 'pending_moderation'
+            ]
 
+            if pending_reviews:
+                send_moderation_digest_email.delay(
+                    self.user.id,
+                    len(pending_reviews),
+                    pending_reviews[:10],
+                )
             return {
                 'success': True,
                 'processed': len(reviews),

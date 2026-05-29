@@ -30,3 +30,25 @@ def send_transactional_email(
 
     except Exception as exc:
         raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_moderation_digest_email(
+    self,
+    user_id: int,
+    pending_count: int,
+    reviews: list,
+):
+    """
+    Отправляет дайджест по ответам, которые ожидают модерации.
+    """
+    return send_transactional_email(
+        user_id=user_id,
+        template_name="moderation_digest",
+        context={
+            "pending_count": pending_count,
+            "reviews": reviews,
+            "moderation_url": "http://localhost:5174/lk/module/ai-reviews/moderation",
+        },
+        subject="Новые ответы ждут модерации",
+    )
