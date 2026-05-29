@@ -24,7 +24,7 @@ def send_transactional_email(
         )
 
         if not success:
-            raise Exception("EmailService returned False")
+            return False
 
         return True
 

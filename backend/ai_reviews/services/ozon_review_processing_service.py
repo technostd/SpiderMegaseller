@@ -12,6 +12,7 @@ from accounts.models import UserModuleConfig
 from ..models import OzonReview, ReviewAnalysis
 from core.integrations.ozon import OzonServiceFactory, OzonAPIError
 from core.integrations.yandex_gpt import yandex_gpt, YandexGPTError
+from core.tasks import send_transactional_email
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -164,7 +165,20 @@ class OzonReviewProcessingService:
 
         except (OzonAPIError, ValueError) as e:
             logger.error(f"[Ozon] API error: {e}")
+
+            send_transactional_email.delay(
+                self.user.id,
+                "integration_error",
+                {
+                    "error_title": "Ошибка подключения к Ozon",
+                    "error_message": str(e),
+                    "dashboard_url": "http://localhost:5174/lk/integrations",
+                },
+                "Ошибка подключения к Ozon"
+            )
+
             return {'success': False, 'error': f'Ozon API: {e}'}
+                    
         except Exception as e:
             logger.exception("Critical error in OzonReviewProcessingService.run")
             return {'success': False, 'error': str(e)}

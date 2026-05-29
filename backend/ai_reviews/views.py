@@ -1,4 +1,5 @@
 # ai_reviews/api/views.py
+from core.tasks import send_transactional_email
 
 import json
 import logging
@@ -182,6 +183,18 @@ class AnalyzeReviewView(APIView):
                 is_success=False,
                 error_message=str(e)
             )
+
+            send_transactional_email.delay(
+                request.user.id,
+                "gpt_error",
+                {
+                    "error_title": "Ошибка Yandex GPT",
+                    "error_message": str(e),
+                    "dashboard_url": "http://localhost:5174/lk/module/ai-reviews",
+                },
+                "Ошибка AI-анализа"
+            )
+
             return Response({
                 'success': False,
                 'error': str(e),
@@ -257,11 +270,60 @@ class ProcessOzonReviewsView(APIView):
         try:
             processor = OzonReviewProcessingService(request.user)
             result = processor.run(days_back=days_back)
+
+            total_count = (
+                result.get("total_count")
+                or result.get("total")
+                or result.get("reviews_count")
+                or result.get("processed_total")
+                or 0
+            )
+
+            success_count = (
+                result.get("success_count")
+                or result.get("processed_count")
+                or result.get("success")
+                or 0
+            )
+
+            failed_count = (
+                result.get("failed_count")
+                or result.get("errors_count")
+                or result.get("failed")
+                or 0
+            )
+
+            send_transactional_email.delay(
+                request.user.id,
+                "processing_report",
+                {
+                    "total_count": total_count,
+                    "success_count": success_count,
+                    "failed_count": failed_count,
+                    "dashboard_url": "http://localhost:5174/lk/module/ai-reviews/ozon-analytics",
+                },
+                "Обработка отзывов завершена"
+            )
+
             return Response(result)
+
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             logger.exception("ProcessOzonReviewsView failed")
+
+            send_transactional_email.delay(
+                request.user.id,
+                "gpt_error",
+                {
+                    "error_title": "Ошибка обработки отзывов",
+                    "error_message": str(e),
+                    "dashboard_url": "http://localhost:5174/lk/module/ai-reviews",
+                },
+                "Ошибка AI-анализа"
+            )
+
             return Response(
                 {'error': 'Internal error', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

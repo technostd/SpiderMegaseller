@@ -1,3 +1,9 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+from core.tasks import send_transactional_email
+
 from django.contrib.auth import get_user_model
 
 from rest_framework.views import APIView
@@ -154,16 +160,33 @@ class CredentialsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        client_id = request.data.get('client_id') or ''
+        api_key = request.data.get('api_key') or ''
+        api_secret = request.data.get('api_secret') or ''
+
         cred, created = MarketplaceCredentials.objects.update_or_create(
             user=request.user,
             marketplace=marketplace,
             defaults={
-                'client_id': request.data.get('client_id', ''),
-                'api_key': request.data.get('api_key', ''),
-                'api_secret': request.data.get('api_secret', ''),
+                'client_id': client_id,
+                'api_key': api_key,
+                'api_secret': api_secret,
             }
         )
-
+        try:
+            send_transactional_email.delay(
+                request.user.id,
+                "credentials_updated",
+                {
+                    "marketplace_name": marketplace.upper(),
+                    "action": "Ключи API сохранены" if created else "Ключи API обновлены",
+                    "dashboard_url": "http://localhost:5174/lk/integrations",
+                },
+                "Ключи интеграции обновлены"
+            )
+        except Exception as e:
+            logger.exception("Failed to send credentials_updated email: %s", e)
+            
         return Response({
             'success': True,
             'marketplace': marketplace,
